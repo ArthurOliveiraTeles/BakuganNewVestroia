@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Batalha Bakugan</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+
+    /* Estilos básicos */
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background-color: #121212; /* Fundo geral da página */
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    /*
+      Container principal que terá:
+        - Sidebar (esquerda)
+        - Coluna principal (título, barras, estoques, campo)
+        - Sidebar (direita)
+    */
+    .page-container {
+      display: flex;             
+      align-items: flex-start;   
+      justify-content: center;   
+      padding: 20px;
+      background-color: rgba(55, 82, 100, 0.283);
+      /*flex-direction: row-reverse; Se quiser inverter */
+    }
+
+    /* Sidebar da esquerda */
+    .sidebar-controls {
+      width: 250px;
+      background: rgba(49, 49, 49, 0.9);
+      padding: 8px;
+      border-radius: 8px;
+      align-self: flex-start;
+      margin-right: 20px; /* espaço entre o sidebar e a main */
+      margin-top: 180px;
+    }
+
+    /* Coluna principal (centro) */
+    .main-column {
+      width: 60%;
+      min-width: 650px;
+    }
+
+    /* Sidebar da direita */
+    .sidebar-controls-right {
+      width: 250px;
+      background: rgba(49, 49, 49, 0.9);
+      padding: 8px;
+      border-radius: 8px;
+      align-self: flex-start;
+      margin-left: 20px; 
+      margin-top: 215px;
+    }
+    /* Título do jogo */
+    h1.game-title {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    /* Barra de vida */
+    .health-bar-container {
+      display: flex;
+      align-items: center;
+      position: relative;
+      margin: 20px 0;
+      background: #666;
+      border: 5px solid #444;
+      border-radius: 10px;
+      padding: 5px;
+      max-width: 1100px;
+      box-shadow: inset 0 0 10px #000;
+    }
+    .health-bar {
+      height: 50px;
+      width: 100%;
+      transition: width 1s ease-in-out, background 0.5s ease;
+      border-radius: 5px;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+    .player-panel {
+      position: absolute;
+      left: -80px;
+      width: 120px;
+      height: 120px;
+      background: #1a1a1a;
+      border: 3px solid #555;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .player-img {
+      width: 110px;
+      height: 110px;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    /* Estoque de bakugans */
+    .bakugan-container {
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    .bakugan {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 10px white;
+      cursor: grab;
+    }
+    .bakugan.player1 {
+      background: radial-gradient(circle, red, darkred);
+    }
+    .bakugan.player2 {
+      background: radial-gradient(circle, blue, darkblue);
+    }
+
+    /* Container do campo (3 linhas x 4 colunas => 12 cartas) */
+    .battle-container {
+      background: rgba(255, 255, 255, 0.1);
+      border: 5px solid rgb(3, 25, 219);
+      border-radius: 10px;
+      padding: 20px;
+      box-sizing: border-box;
+      background-image: url(imgs/arena_interspace.png);
+      background-position: center;
+      background-size: 125%;
+    }
+    .battlefield {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr); /* 4 colunas */
+      grid-template-rows: repeat(3, 1fr);    /* 3 linhas */
+      gap: 0;
+      width: 600px;
+      height: 450px;
+      margin: 0 auto;
+      border: 3px solid #888;
+      background-color: #2c2c2c6c;
+    }
+    .battlefield-card {
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid #888;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+      font-weight: bold;
+      position: relative;
+    }
+    .battlefield-card.active {
+      background: rgba(255, 215, 0, 0.9);
+      border: 3px solid #ffcc00;
+      box-shadow: 0 0 15px #ffcc00;
+      transform: scale(1.1);
+      transition: all 0.2s ease-in-out;
+    }
+    /* Numeração no centro de cada carta */
+    .card-number {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+      pointer-events: none; /* não interfere no drop */
+    }
+    .battlefield-card .bakugan {
+      position: relative;
+      width: 35px;
+      height: 35px;
+      margin: 3px;
+      z-index: 2; /* bakugan acima da numeração */
+    }
+
+    /* Botões */
+    button {
+      background-color: #ff5722;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: 0.3s;
+      margin: 5px 0;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #e64a19;
+    }
+
+    /* Ajuste de labels e inputs */
+    .sidebar-controls label,
+    .sidebar-controls select,
+    .sidebar-controls input,
+    .sidebar-controls-right label,
+    .sidebar-controls-right select,
+    .sidebar-controls-right input {
+      display: block;
+      margin: 10px 0 5px 0;
+      text-align: left;
+    }
+    .sidebar-controls select,
+    .sidebar-controls input,
+    .sidebar-controls-right select,
+    .sidebar-controls-right input {
+      width: 100%;
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .sidebar-controls select:focus,
+    .sidebar-controls input:focus,
+    .sidebar-controls-right select:focus,
+    .sidebar-controls-right input:focus {
+      outline: none;
+      border-color: #ff5722;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <!-- SIDEBAR ESQUERDA -->
+  <div class="sidebar-controls">
+    <h2>Seleção de Personagens</h2>
+
+    <label for="player1Select">Jogador 1</label>
+    <select id="player1Select">
+      <option value="imgs/genericplayer.png">Player1 (Padrão)</option>
+      <option value="imgs/spectra.png">Spectra</option>
+      <option value="imgs/mira.png">Mira</option>
+    </select>
+
+    <label for="player2Select">Jogador 2</label>
+    <select id="player2Select">
+      <option value="imgs/genericplayer.png">Player2 (Padrão)</option>
+      <option value="imgs/spectra.png">Spectra</option>
+      <option value="imgs/mira.png">Mira</option>
+    </select>
+
+    <h2>Configurações</h2>
+    <label for="winner">Quem venceu a batalha?</label>
+    <select id="winner">
+      <option value="jogador1">Jogador 1</option>
+      <option value="jogador2">Jogador 2</option>
+    </select>
+
+    <label for="gPower">Diferença de força G:</label>
+    <input type="number" id="gPower" min="0" />
+
+    <button onclick="applyDamage()">Aplicar Dano</button>
+    <button onclick="resetArena()">Resetar Arena</button>
+    <button onclick="resetGame()">Resetar Jogo</button>
+  </div>
+
+  <!-- COLUNA PRINCIPAL (CENTRO) -->
+  <div class="main-column">
+
+    <!-- TÍTULO -->
+    <h1 class="game-title">Arena de Batalha Bakugan</h1>
+
+    <!-- BARRA DE VIDA JOGADOR 1 -->
+    <div class="health-bar-container">
+      <div class="player-panel">
+        <img src="player1.png" alt="Jogador 1" class="player-img" id="player1Img">
+      </div>
+      <div id="hp1" class="health-bar"></div>
+    </div>
+
+    <!-- ESTOQUE DO JOGADOR 1 -->
+    <div class="bakugan-container" id="containerPlayer1">
+      <div class="bakugan player1" draggable="true" id="bakugan1"></div>
+      <div class="bakugan player1" draggable="true" id="bakugan2"></div>
+      <div class="bakugan player1" draggable="true" id="bakugan3"></div>
+    </div>
+
+    <!-- CAMPO DE BATALHA (3 linhas x 4 colunas = 12 cartas) -->
+    <div class="battle-container">
+      <div class="battlefield">
+        <!-- Cada carta com um número (1..12) -->
+        <div class="battlefield-card" id="card1">
+          <span class="card-number">1</span>
+        </div>
+        <div class="battlefield-card" id="card2">
+          <span class="card-number">2</span>
+        </div>
+        <div class="battlefield-card" id="card3">
+          <span class="card-number">3</span>
+        </div>
+        <div class="battlefield-card" id="card4">
+          <span class="card-number">4</span>
+        </div>
+        <div class="battlefield-card" id="card5">
+          <span class="card-number">5</span>
+        </div>
+        <div class="battlefield-card" id="card6">
+          <span class="card-number">6</span>
+        </div>
+        <div class="battlefield-card" id="card7">
+          <span class="card-number">7</span>
+        </div>
+        <div class="battlefield-card" id="card8">
+          <span class="card-number">8</span>
+        </div>
+        <div class="battlefield-card" id="card9">
+          <span class="card-number">9</span>
+        </div>
+        <div class="battlefield-card" id="card10">
+          <span class="card-number">10</span>
+        </div>
+        <div class="battlefield-card" id="card11">
+          <span class="card-number">11</span>
+        </div>
+        <div class="battlefield-card" id="card12">
+          <span class="card-number">12</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTOQUE DO JOGADOR 2 -->
+    <div class="bakugan-container" id="containerPlayer2">
+      <div class="bakugan player2" draggable="true" id="bakugan4"></div>
+      <div class="bakugan player2" draggable="true" id="bakugan5"></div>
+      <div class="bakugan player2" draggable="true" id="bakugan6"></div>
+    </div>
+
+    <!-- BARRA DE VIDA JOGADOR 2 -->
+    <div class="health-bar-container" style="margin-top: 40px; display: flex; flex-direction: row-reverse;">
+      <div class="player-panel" style="left: auto; right: -80px;">
+        <img src="player2.png" alt="Jogador 2" class="player-img" id="player2Img">
+      </div>
+      <div id="hp2" class="health-bar"></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DIREITA (NOVO) -->
+  <div class="sidebar-controls-right">
+    <h2>Modo Solo?</h2>
+    <select id="modoSoloSelect">
+      <option value="nao">Não</option>
+      <option value="sim">Sim</option>
+    </select>
+
+    <!-- Opções para quando "Sim" -->
+    <div id="soloOptions" style="display: none; margin-top: 15px;">
+      <!-- NOVAS OPÇÕES (acima das outras) -->
+      <button onclick="rolarDadoCartaPortal()">Jogar carta portal? (0..1)</button>
+      <button onclick="rolarDadoVaiDarStand()">Vai dar stand? (0..1)</button>
+
+      <!-- Opções já existentes -->
+      <button onclick="rolarDadoStand()">Rolar dado para stand/jogar a carta portal (1..12)</button>
+      <button onclick="rolarDadoHabilidade()">Vai ativar habilidade? (0..1)</button>
+      <button onclick="rolarDadoAtivarHab()">Rolar dado para ativar (1..3)</button>
+    </div>
+  </div>
+
+</div> <!-- Fim page-container -->
+
+<script>
+  let hp1 = 100;
+  let hp2 = 100;
+
+  // Atualiza cor/tamanho da barra de vida
+  function updateHealthBar(healthBar, hp, isPlayer2 = false) {
+    healthBar.style.width = hp + "%";
+    if (hp > 60) {
+      healthBar.style.background = isPlayer2
+        ? "linear-gradient(270deg, red 0%, orange 40%, yellow 70%, green 100%)"
+        : "linear-gradient(90deg, red 0%, orange 40%, yellow 70%, green 100%)";
+    } else if (hp > 30) {
+      healthBar.style.background = isPlayer2
+        ? "linear-gradient(270deg, red 0%, orange 50%, yellow 100%)"
+        : "linear-gradient(90deg, red 0%, orange 50%, yellow 100%)";
+    } else {
+      healthBar.style.background = "linear-gradient(90deg, red 0%, darkred 100%)";
+    }
+  }
+
+  // Inicializa barras de vida
+  updateHealthBar(document.getElementById("hp1"), hp1);
+  updateHealthBar(document.getElementById("hp2"), hp2, true);
+
+  // Aplica Dano
+  function applyDamage() {
+    let winner = document.getElementById("winner").value;
+    let gPower = parseInt(document.getElementById("gPower").value);
+    let damage = 0;
+
+    if (gPower >= 10 && gPower <= 100) {
+      damage = Math.random() * (20 - 10) + 10; // 10 a 20
+    } else if (gPower >= 110 && gPower <= 200) {
+      damage = Math.random() * (40 - 30) + 30; // 30 a 40
+    } else if (gPower > 200 && gPower <= 350) {
+      damage = Math.random() * (55 - 45) + 45; // 45 a 55
+    } else if (gPower > 350) {
+      damage = Math.random() * (70 - 60) + 60; // 60 a 70
+    }
+
+    if (winner === "jogador1") {
+      hp2 -= damage;
+      if (hp2 < 0) hp2 = 0;
+      if (hp2 === 0) {
+        alert('Jogador 1 venceu a batalha!');
+      }
+      updateHealthBar(document.getElementById("hp2"), hp2, true);
+    } else {
+      hp1 -= damage;
+      if (hp1 < 0) hp1 = 0;
+      if (hp1 === 0) {
+        alert('Jogador 2 venceu a batalha!');
+      }
+      updateHealthBar(document.getElementById("hp1"), hp1);
+    }
+  }
+
+  // Clique -> toggle "active" na carta
+  document.querySelectorAll('.battlefield-card').forEach(card => {
+    card.addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+  });
+
+  // DRAG & DROP no campo
+  document.querySelectorAll('.bakugan').forEach(bakugan => {
+    bakugan.addEventListener('dragstart', function(event) {
+      event.dataTransfer.setData('text/plain', event.target.id);
+    });
+  });
+
+  document.querySelectorAll('.battlefield-card').forEach(card => {
+    card.addEventListener('dragover', function(event) {
+      event.preventDefault();
+    });
+    card.addEventListener('drop', function(event) {
+      event.preventDefault();
+      const bakuganId = event.dataTransfer.getData('text/plain');
+      const bakugan = document.getElementById(bakuganId);
+      card.appendChild(bakugan);
+    });
+  });
+
+  // Estoque Jogador 1
+  const containerP1 = document.getElementById('containerPlayer1');
+  containerP1.addEventListener('dragover', function(event) {
+    event.preventDefault();
+  });
+  containerP1.addEventListener('drop', function(event) {
+    event.preventDefault();
+    const bakuganId = event.dataTransfer.getData('text/plain');
+    const bakugan = document.getElementById(bakuganId);
+    if (bakugan.classList.contains('player1')) {
+      containerP1.appendChild(bakugan);
+    }
+  });
+
+  // Estoque Jogador 2
+  const containerP2 = document.getElementById('containerPlayer2');
+  containerP2.addEventListener('dragover', function(event) {
+    event.preventDefault();
+  });
+  containerP2.addEventListener('drop', function(event) {
+    event.preventDefault();
+    const bakuganId = event.dataTransfer.getData('text/plain');
+    const bakugan = document.getElementById(bakuganId);
+    if (bakugan.classList.contains('player2')) {
+      containerP2.appendChild(bakugan);
+    }
+  });
+
+  // Resetar apenas a arena
+  function resetArena() {
+    document.querySelectorAll('.battlefield-card').forEach(card => {
+      card.querySelectorAll('.bakugan').forEach(b => b.remove());
+    });
+
+    // Recria estoque do Jogador 1
+    containerP1.innerHTML = `
+      <div class="bakugan player1" draggable="true" id="bakugan1"></div>
+      <div class="bakugan player1" draggable="true" id="bakugan2"></div>
+      <div class="bakugan player1" draggable="true" id="bakugan3"></div>
+    `;
+    // Recria estoque do Jogador 2
+    containerP2.innerHTML = `
+      <div class="bakugan player2" draggable="true" id="bakugan4"></div>
+      <div class="bakugan player2" draggable="true" id="bakugan5"></div>
+      <div class="bakugan player2" draggable="true" id="bakugan6"></div>
+    `;
+
+    // Reaplica dragstart
+    document.querySelectorAll('.bakugan').forEach(bakugan => {
+      bakugan.addEventListener('dragstart', function(event) {
+        event.dataTransfer.setData('text/plain', event.target.id);
+      });
+    });
+  }
+
+  // Resetar jogo (HP + arena)
+  function resetGame() {
+    hp1 = 100;
+    hp2 = 100;
+    updateHealthBar(document.getElementById("hp1"), hp1);
+    updateHealthBar(document.getElementById("hp2"), hp2, true);
+    resetArena();
+  }
+
+  // Seletor + container das opções do Modo Solo
+  const modoSoloSelect = document.getElementById('modoSoloSelect');
+  const soloOptions = document.getElementById('soloOptions');
+
+  modoSoloSelect.addEventListener('change', function(e) {
+    if (e.target.value === 'sim') {
+      soloOptions.style.display = 'block';
+    } else {
+      soloOptions.style.display = 'none';
+    }
+  });
+
+  // NOVAS Funções de dado (acima das outras)
+  function rolarDadoCartaPortal() {
+    // Valor 0 ou 1
+    const result = Math.floor(Math.random() * 2);
+    if (result === 0) {
+        var resulT = 'NÃO';
+    } else {
+        var resulT = 'SIM';
+    }
+    alert(`Jogar carta portal? ${resulT}`);
+  }
+
+  function rolarDadoVaiDarStand() {
+    // Valor 0 ou 1
+    const result = Math.floor(Math.random() * 2);
+    if (result === 0) {
+        var resulT = 'NÃO';
+    } else {
+        var resulT = 'SIM';
+    }
+    alert(`Vai dar stand? ${resulT}`);
+  }
+
+  // Funções de rolar dados (já existentes)
+  function rolarDadoStand() {
+    // Valor 1 a 12
+    const result = Math.floor(Math.random() * 12) + 1;
+    alert(`Stand/Jogar na carta portal: ${result}`);
+  }
+
+  function rolarDadoHabilidade() {
+    // Valor 0 ou 1
+    const result = Math.floor(Math.random() * 2);
+    if (result === 0) {
+        var resulT = 'NÃO';
+    } else {
+        var resulT = 'SIM';
+    }
+    alert(`Habilidade: ${resulT}`);
+  }
+
+  function rolarDadoAtivarHab() {
+    // Valor 1 a 3
+    const result = Math.floor(Math.random() * 3) + 1;
+    alert(`Ativar habilidade: ${result}`);
+  }
+
+    // Lógica de troca de personagem
+  const player1Img = document.getElementById('player1Img');
+  const player2Img = document.getElementById('player2Img');
+  document.getElementById('player1Select')?.addEventListener('change', function(e) {
+    player1Img.src = e.target.value;
+  });
+  document.getElementById('player2Select')?.addEventListener('change', function(e) {
+    player2Img.src = e.target.value;
+  });
+</script>
+</body>
+</html>
