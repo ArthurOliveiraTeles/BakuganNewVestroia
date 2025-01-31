@@ -562,13 +562,13 @@
     let damage = 0;
 
     if (gPower >= 10 && gPower <= 100) {
-      damage = Math.random() * (20 - 10) + 10; // 10..20
+      damage = Math.random() * (20 - 10) + 10; // 10..20% de dano
     } else if (gPower >= 110 && gPower <= 200) {
-      damage = Math.random() * (40 - 30) + 30; // 30..40
+      damage = Math.random() * (40 - 30) + 30; // 30..40% de dano
     } else if (gPower > 200 && gPower <= 350) {
-      damage = Math.random() * (55 - 45) + 45; // 45..55
+      damage = Math.random() * (55 - 45) + 45; // 45..55% de dano
     } else if (gPower > 350) {
-      damage = Math.random() * (70 - 60) + 60; // 60..70
+      damage = Math.random() * (70 - 60) + 60; // 60..70% de dano
     }
 
     if (winner === "jogador1") {
