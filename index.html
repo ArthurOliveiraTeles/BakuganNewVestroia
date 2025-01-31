@@ -514,6 +514,7 @@
       <button onclick="rolarDadoStand()">Rolar dado para stand/jogar a carta portal (1..12)</button>
       <button onclick="rolarDadoVaiDarStand()">Vai dar stand? (0..1)</button>
       <button onclick="rolarDadoHabilidade()">Vai ativar habilidade? (0..1)</button>
+      <button onclick="rolarDadoGear()">Vai ativar Battle Gear/Trap/Mechtogan? (0..1)</button>
       <button onclick="rolarDadoAtivarHab()">Rolar dado para ativar (1..3)</button>
       <button onclick="rolarDadoAtivarHab2()">Rolar dado para ativar (1..2)</button>
     </div>
@@ -737,6 +738,10 @@
   function rolarDadoHabilidade() {
     const result = Math.floor(Math.random() * 2);
     alert(`Habilidade: ${result === 0 ? "NÃO" : "SIM"}`);
+  }
+  function rolarDadoGear() {
+    const result = Math.floor(Math.random() * 2);
+    alert(`Ativar Battle Gear/Trap/Mechtogan: ${result === 0 ? "NÃO" : "SIM"}`);
   }
   function rolarDadoAtivarHab() {
     const result = Math.floor(Math.random() * 3) + 1;
