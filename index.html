@@ -7,7 +7,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
 
-    /* Estilos básicos (para telas maiores) */
+    /* Estilos básicos (desktop e telas maiores) */
     body {
       font-family: 'Orbitron', sans-serif;
       background-color: #121212;
@@ -16,11 +16,17 @@
       padding: 0;
     }
 
-    /* Removendo o logo para todos os breakpoints */
     .logo-container {
-      display: none;
+      position: absolute;
+      top: 30px;
+      left: 4%;
+      z-index: 999;
     }
-    
+    .logo-container img {
+      width: 140px;
+      height: auto;
+    }
+
     .page-container {
       display: flex;
       align-items: flex-start;
@@ -73,7 +79,6 @@
       max-width: 1100px;
       box-shadow: inset 0 0 10px #000;
     }
-    /* Barra de HP padrão para desktop */
     .health-bar {
       height: 50px;
       width: 100%;
@@ -81,7 +86,6 @@
       border-radius: 5px;
       box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
     }
-    /* Área que contém a imagem do jogador (desktop) */
     .player-panel {
       position: absolute;
       left: -80px;
@@ -287,7 +291,7 @@
       object-fit: contain;
     }
     
-    #player-panel2 {
+    #player-panel2{
       left: auto;
       right: -80px;
     }
@@ -296,7 +300,9 @@
        MEDIA QUERIES PARA MOBILE
        ----------------------------- */
     @media only screen and (max-width: 480px) {
-      /* A logo já está removida em todos os breakpoints */
+      .logo-container {
+        display: none;
+      }
       .health-bar {
         height: 25px;
       }
@@ -333,7 +339,6 @@
         width: 90%;
         max-width: 100%;
       }
-      /* Reduzindo os player panels para mobile */
       .player-panel {
         width: 60px;
         height: 60px;
@@ -362,23 +367,21 @@
        (min-width: 481px e max-width: 768px)
        ----------------------------- */
     @media only screen and (min-width: 481px) and (max-width: 768px) {
-      /* Mesmo que anteriormente, mas com ajustes para HP e player panels */
+      /* Ajuste sutil no tamanho da logo */
+      .logo-container img {
+        width: 120px;
+      }
+      /* Reduz a altura da barra de HP */
       .health-bar {
-        height: 30px; /* Reduzido em relação ao desktop */
+        height: 35px;
       }
-      .player-panel {
-        width: 50px;
-        height: 50px;
-      }
-      .player-img {
-        width: 50px;
-        height: 50px;
-      }
+      /* Empilha os contêineres se necessário */
       .page-container {
         flex-direction: column;
         align-items: center;
         padding: 10px;
       }
+      /* Ajusta a largura das sidebars e centraliza */
       .sidebar-controls,
       .sidebar-controls-right {
         width: 80%;
@@ -388,7 +391,7 @@
         width: 95%;
         min-width: auto;
       }
-      /* Arena: grid de 3 colunas e linhas automáticas */
+      /* Arena: utiliza grid 3 colunas e linhas automáticas para acomodar os 12 cards */
       .battlefield {
         width: 95%;
         height: auto;
@@ -402,9 +405,19 @@
       .card-number {
         font-size: 18px;
       }
+      /* Modal ajustado */
       .deck-modal-content {
         width: 90%;
         max-width: 100%;
+      }
+      /* Player panels um pouco maiores */
+      .player-panel {
+        width: 70px;
+        height: 70px;
+      }
+      .player-img {
+        width: 70px;
+        height: 70px;
       }
       .battle-container {
         background-size: cover;
@@ -416,16 +429,11 @@
        (min-width: 769px e max-width: 1024px)
        ----------------------------- */
     @media only screen and (min-width: 769px) and (max-width: 1024px) {
+      .logo-container img {
+        width: 140px;
+      }
       .health-bar {
-        height: 35px; /* Reduzido em relação ao desktop */
-      }
-      .player-panel {
-        width: 60px;
-        height: 60px;
-      }
-      .player-img {
-        width: 60px;
-        height: 60px;
+        height: 40px;
       }
       .page-container {
         flex-direction: row;
@@ -438,10 +446,10 @@
         margin: 10px;
       }
       .main-column {
-        width: calc(100% - 440px);
+        width: calc(100% - 440px); /* largura total menos sidebars e margens */
         min-width: auto;
       }
-      /* Arena: grid de 4 colunas com linhas automáticas */
+      /* Arena: volta ao grid 4x? (ajuste conforme a necessidade) */
       .battlefield {
         width: 95%;
         height: auto;
@@ -455,11 +463,23 @@
       .card-number {
         font-size: 20px;
       }
+      .player-panel {
+        width: 80px;
+        height: 80px;
+      }
+      .player-img {
+        width: 80px;
+        height: 80px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- A logo foi removida -->
+
+  <!-- LOGO (oculta no mobile, visível em telas maiores) -->
+  <div class="logo-container">
+    <img src="imgs/bakugan_logo.png" alt="Logo do jogo">
+  </div>
 
   <!-- Áudios -->
   <audio id="damageSound" src="imgs/damage.mp3" preload="auto"></audio>
