@@ -16,15 +16,15 @@
       padding: 0;
     }
 
-    /* Container da logo no canto superior esquerdo */
+    /* Container da logo */
     .logo-container {
-      position: absolute; /* Fica "fixo" no canto superior esquerdo */
+      position: absolute;
       top: 30px;
       left: 4%;
-      z-index: 999; /* Para garantir que fique acima de outros elementos */
+      z-index: 999;
     }
     .logo-container img {
-      width: 140px; /* Ajuste conforme desejar */
+      width: 140px;
       height: auto;
     }
 
@@ -236,23 +236,23 @@
        ESTILOS DO MODAL (sugestão)
        ----------------------------- */
     .deck-modal {
-      display: none; /* Oculto por padrão */
+      display: none;
       position: fixed;
-      z-index: 9999; /* Fica na frente de tudo */
+      z-index: 9999;
       left: 0;
       top: 0;
       width: 100%;
       height: 100%;
-      overflow: auto; /* Se precisar rolar */
-      background-color: rgba(0, 0, 0, 0.7); /* fundo semitransparente */
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.7);
     }
     .deck-modal-content {
       background-color: #333;
-      margin: 5% auto; /* centralizado */
+      margin: 5% auto;
       padding: 20px;
       border: 3px solid #444;
       border-radius: 8px;
-      width: 60%; /* Largura da caixa do modal */
+      width: 60%;
       max-width: 800px;
       position: relative;
     }
@@ -275,7 +275,7 @@
     }
     .deck-grid div {
       display: flex;
-      flex-direction: column; /* Título em cima, imagem embaixo */
+      flex-direction: column;
       align-items: center;
     }
     .deck-grid div h5 {
@@ -283,7 +283,6 @@
       text-align: center;
       font-size: 1em;
     }
-    /* Aumentamos as dimensões das cartas (imagens) */
     .deck-grid img {
       width: 100px;
       height: 140px;
@@ -291,26 +290,30 @@
       border: 2px solid #fff;
       box-shadow: 0 0 8px rgba(255,255,255,0.5);
     }
-    /* Para a primeira linha do grid, mantemos object-fit: contain */
     .deck-grid div:nth-child(-n+3) img {
       width: 100px;
       height: 140px;
       object-fit: contain;
+    }
+    
+    #player-panel2{
+      left: auto;
+      right: -80px;
     }
 
     /* -----------------------------
        MEDIA QUERIES PARA MOBILE
        ----------------------------- */
     @media only screen and (max-width: 480px) {
-      /* Remover a logo no mobile */
+      /* Remover a logo */
       .logo-container {
         display: none;
       }
       /* Reduz a altura das barras de HP */
       .health-bar {
-        height: 30px;
+        height: 25px;
       }
-      /* Ajusta os contêineres para empilhar verticalmente */
+      /* Empilha os contêineres verticalmente */
       .page-container {
         flex-direction: column;
         align-items: center;
@@ -324,680 +327,718 @@
         width: 100%;
         min-width: auto;
       }
-      /* Ajusta o campo de batalha (arena) */
+      /* Arena: grid 3x3 com altura de 600px; oculta células extras */
       .battlefield {
         width: 90%;
-        height: auto; /* altura automática para adaptação */
+        height: 600px;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
         margin: 10px auto;
       }
-      /* Reduz um pouco o tamanho dos textos da arena */
+      .battlefield-card:nth-child(n+10) {
+        display: none;
+      }
       .battlefield-card {
         font-size: 16px;
       }
       .card-number {
         font-size: 18px;
       }
-      /* Ajusta o modal para ocupar quase toda a largura */
+      /* Modal: largura ajustada */
       .deck-modal-content {
         width: 90%;
         max-width: 100%;
       }
+      /* Reduz o tamanho dos quadrados dos jogadores (barras laterais) */
+      .player-panel {
+        width: 60px;
+        height: 60px;
+      }
+      .player-img {
+        width: 60px;
+        height: 60px;
+      }
+      /* Reposiciona os player-panels para ambos os jogadores à esquerda */
+      .main-column .health-bar-container:first-of-type .player-panel,
+      .main-column .health-bar-container:last-of-type .player-panel {
+        position: relative;
+        left: 0;
+        right: auto;
+      }
+      /* Fundo da arena */
+      .battle-container {
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+      #player-panel2 {
+        right: auto;
+      }
+      
     }
   </style>
 </head>
 <body>
 
-<!-- LOGO NO TOPO ESQUERDO (oculta no mobile via media query) -->
-<div class="logo-container">
-  <img src="imgs/bakugan_logo.png" alt="Logo do jogo">
-</div>
-
-<!-- Áudios de dano -->
-<audio id="damageSound" src="imgs/damage.mp3" preload="auto"></audio>
-<audio id="damageSoundZeroHp" src="imgs/damage_end.mp3" preload="auto"></audio>
-
-<div class="page-container">
-  <!-- SIDEBAR ESQUERDA -->
-  <div class="sidebar-controls">
-    <h2>Seleção de Personagens</h2>
-    <label for="player2Select">Jogador 1</label>
-    <select id="player2Select">
-      <option value="imgs/genericplayer.png">Player1 (Padrão)</option>
-      <option value="imgs/spectra.png">Spectra</option>
-      <option value="imgs/mira.png">Mira</option>
-      <option value="imgs/marucho.png">Marucho</option>
-      <option value="imgs/iconcanal2.png">Thur</option>
-    </select>
-    <label for="player1Select">Jogador 2</label>
-    <select id="player1Select">
-      <option value="imgs/genericplayer.png">Player2 (Padrão)</option>
-      <option value="imgs/spectra.png">Spectra</option>
-      <option value="imgs/mira.png">Mira</option>
-      <option value="imgs/marucho.png">Marucho</option>
-      <option value="imgs/dan.png">Dan</option>
-      <option value="imgs/iconcanal2.png">Thur</option>
-    </select>
-    <!-- Botão para ver sugestão de deck -->
-    <button id="deckBtn2" onclick="openDeckSuggestion()">
-      Ver sugestão para Deck do Jogador 2
-    </button>
-    <h2>Configurações</h2>
-    <label for="winner">Quem venceu a batalha?</label>
-    <select id="winner">
-      <option value="jogador1">Jogador 1</option>
-      <option value="jogador2">Jogador 2</option>
-    </select>
-    <label for="gPower">Diferença de força G:</label>
-    <input type="number" id="gPower" min="0" />
-    <button onclick="applyDamage()">Aplicar Dano</button>
-    <button onclick="resetArena()">Resetar Arena</button>
-    <button onclick="resetGame()">Resetar Jogo</button>
-    <div class="divider"></div>
-    <h2>Atributo dos Bakugans</h2>
-    <!-- =========================
-         JOGADOR 1: MODO DE COR
-         ========================= -->
-    <h3>Jogador 1</h3>
-    <label for="modoCorP2">Modo de Atributo:</label>
-    <select id="modoCorP2" onchange="toggleColorMode('p2', this.value)">
-      <option value="">-- Selecione --</option>
-      <option value="unica">Atributos Únicos</option>
-      <option value="individual">Atributos Individuais</option>
-    </select>
-    <div id="containerCorUnicaP2" style="display:none;">
-      <label for="colorAllP2">Selecione o atributo (todos iguais):</label>
-      <select id="colorAllP2" onchange="changeBakuganColor('player2', this.value)">
-        <option value="">-- Selecione --</option>
-        <option value="Azul">Aquos</option>
-        <option value="Vermelho">Pyrus</option>
-        <option value="Verde">Ventus</option>
-        <option value="Branco">Haos</option>
-        <option value="Laranja">Subterra</option>
-        <option value="Preto">Darkus</option>
-      </select>
-    </div>
-    <div id="containerCorIndividualP2" style="display:none; margin-top:10px;">
-      <p>Selecione o atributo de cada Bakugan:</p>
-      <label for="colorB1P2">Bakugan 1:</label>
-      <select id="colorB1P2" onchange="changeSingleBakuganColor('bakugan4', this.value)">
-        <option value="">-- Selecione --</option>
-        <option value="Azul">Aquos</option>
-        <option value="Vermelho">Pyrus</option>
-        <option value="Verde">Ventus</option>
-        <option value="Branco">Haos</option>
-        <option value="Laranja">Subterra</option>
-        <option value="Preto">Darkus</option>
-      </select>
-      <label for="colorB2P2">Bakugan 2:</label>
-      <select id="colorB2P2" onchange="changeSingleBakuganColor('bakugan5', this.value)">
-        <option value="">-- Selecione --</option>
-        <option value="Azul">Aquos</option>
-        <option value="Vermelho">Pyrus</option>
-        <option value="Verde">Ventus</option>
-        <option value="Branco">Haos</option>
-        <option value="Laranja">Subterra</option>
-        <option value="Preto">Darkus</option>
-      </select>
-      <label for="colorB3P2">Bakugan 3:</label>
-      <select id="colorB3P2" onchange="changeSingleBakuganColor('bakugan6', this.value)">
-        <option value="">-- Selecione --</option>
-        <option value="Azul">Aquos</option>
-        <option value="Vermelho">Pyrus</option>
-        <option value="Verde">Ventus</option>
-        <option value="Branco">Haos</option>
-        <option value="Laranja">Subterra</option>
-        <option value="Preto">Darkus</option>
-      </select>
-    </div>
-    <div class="divider"></div>
-    <!-- =========================
-         JOGADOR 2: MODO DE COR
-         ========================= -->
-    <h3>Jogador 2</h3>
-    <label for="modoCorP1">Modo de Atributo:</label>
-    <select id="modoCorP1" onchange="toggleColorMode('p1', this.value)">
-      <option value="">-- Selecione --</option>
-      <option value="unica">Atributo Único</option>
-      <option value="individual">Atributos Individuais</option>
-    </select>
-    <div id="containerCorUnicaP1" style="display:none;">
-      <label for="colorAllP1">Selecione o atributo (todos iguais):</label>
-      <select id="colorAllP1" onchange="changeBakuganColor('player1', this.value)">
-        <option value="">-- Selecione --</option>
-        <option value="Azul">Aquos</option>
-        <option value="Vermelho">Pyrus</option>
-        <option value="Verde">Ventus</option>
-        <option value="Branco">Haos</option>
-        <option value="Laranja">Subterra</option>
-        <option value="Preto">Darkus</option>
-      </select>
-    </div>
-    <div id="containerCorIndividualP1" style="display:none; margin-top:10px;">
-      <p>Selecione o atributo de cada Bakugan:</p>
-      <label for="colorB4P1">Bakugan 1:</label>
-      <select id="colorB4P1" onchange="changeSingleBakuganColor('bakugan1', this.value)">
-        <option value="">-- Selecione --</option>
-        <option value="Azul">Aquos</option>
-        <option value="Vermelho">Pyrus</option>
-        <option value="Verde">Ventus</option>
-        <option value="Branco">Haos</option>
-        <option value="Laranja">Subterra</option>
-        <option value="Preto">Darkus</option>
-      </select>
-      <label for="colorB5P1">Bakugan 2:</label>
-      <select id="colorB5P1" onchange="changeSingleBakuganColor('bakugan2', this.value)">
-        <option value="">-- Selecione --</option>
-        <option value="Azul">Aquos</option>
-        <option value="Vermelho">Pyrus</option>
-        <option value="Verde">Ventus</option>
-        <option value="Branco">Haos</option>
-        <option value="Laranja">Subterra</option>
-        <option value="Preto">Darkus</option>
-      </select>
-      <label for="colorB6P1">Bakugan 3:</label>
-      <select id="colorB6P1" onchange="changeSingleBakuganColor('bakugan3', this.value)">
-        <option value="">-- Selecione --</option>
-        <option value="Azul">Aquos</option>
-        <option value="Vermelho">Pyrus</option>
-        <option value="Verde">Ventus</option>
-        <option value="Branco">Haos</option>
-        <option value="Laranja">Subterra</option>
-        <option value="Preto">Darkus</option>
-      </select>
-    </div>
+  <!-- LOGO (oculta no mobile) -->
+  <div class="logo-container">
+    <img src="imgs/bakugan_logo.png" alt="Logo do jogo">
   </div>
 
-  <!-- COLUNA PRINCIPAL (CENTRO) -->
-  <div class="main-column">
-    <h1 class="game-title">Arena de Batalha Bakugan</h1>
-    <div class="health-bar-container">
-      <div class="player-panel">
-        <img src="imgs/genericplayer.png" alt="Jogador 1" class="player-img" id="player1Img">
-      </div>
-      <div id="hp1" class="health-bar"></div>
-    </div>
-    <div class="bakugan-container" id="containerPlayer1">
-      <div class="bakugan player1" draggable="true" id="bakugan1"></div>
-      <div class="bakugan player1" draggable="true" id="bakugan2"></div>
-      <div class="bakugan player1" draggable="true" id="bakugan3"></div>
-    </div>
-    <div class="battle-container">
-      <div class="battlefield">
-        <div class="battlefield-card" id="card1">
-          <span class="card-number">1</span>
+  <!-- Áudios -->
+  <audio id="damageSound" src="imgs/damage.mp3" preload="auto"></audio>
+  <audio id="damageSoundZeroHp" src="imgs/damage_end.mp3" preload="auto"></audio>
+
+  <div class="page-container">
+    <!-- SIDEBAR ESQUERDA -->
+    <div class="sidebar-controls">
+      <h2>Seleção de Personagens</h2>
+      <label for="player2Select">Jogador 1</label>
+      <select id="player2Select">
+        <option value="imgs/genericplayer.png">Player1 (Padrão)</option>
+        <option value="imgs/spectra.png">Spectra</option>
+        <option value="imgs/mira.png">Mira</option>
+        <option value="imgs/marucho.png">Marucho</option>
+        <option value="imgs/iconcanal2.png">Thur</option>
+      </select>
+      <label for="player1Select">Jogador 2</label>
+      <select id="player1Select">
+        <option value="imgs/genericplayer.png">Player2 (Padrão)</option>
+        <option value="imgs/spectra.png">Spectra</option>
+        <option value="imgs/mira.png">Mira</option>
+        <option value="imgs/marucho.png">Marucho</option>
+        <option value="imgs/dan.png">Dan</option>
+        <option value="imgs/iconcanal2.png">Thur</option>
+      </select>
+      <!-- Botão para sugestão de deck -->
+      <button id="deckBtn2" onclick="openDeckSuggestion()">
+        Ver sugestão para Deck do Jogador 2
+      </button>
+      <h2>Configurações</h2>
+      <label for="winner">Quem venceu a batalha?</label>
+      <select id="winner">
+        <option value="jogador1">Jogador 1</option>
+        <option value="jogador2">Jogador 2</option>
+      </select>
+      <label for="gPower">Diferença de força G:</label>
+      <input type="number" id="gPower" min="0" />
+      <button onclick="applyDamage()">Aplicar Dano</button>
+      <button onclick="resetArena()">Resetar Arena</button>
+      <button onclick="resetGame()">Resetar Jogo</button>
+      <div class="divider"></div>
+      <h2>Atributo dos Bakugans</h2>
+      <!-- Envolvemos toda a área de seleção de atributos em um container -->
+      <div id="atributosContainer">
+        <!-- JOGADOR 1: MODO DE COR -->
+        <h3>Jogador 1</h3>
+        <label for="modoCorP2">Modo de Atributo:</label>
+        <select id="modoCorP2" onchange="toggleColorMode('p2', this.value)">
+          <option value="">-- Selecione --</option>
+          <option value="unica">Atributos Únicos</option>
+          <option value="individual">Atributos Individuais</option>
+        </select>
+        <div id="containerCorUnicaP2" style="display:none;">
+          <label for="colorAllP2">Selecione o atributo (todos iguais):</label>
+          <select id="colorAllP2" onchange="changeBakuganColor('player2', this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Azul">Aquos</option>
+            <option value="Vermelho">Pyrus</option>
+            <option value="Verde">Ventus</option>
+            <option value="Branco">Haos</option>
+            <option value="Laranja">Subterra</option>
+            <option value="Preto">Darkus</option>
+          </select>
         </div>
-        <div class="battlefield-card" id="card2">
-          <span class="card-number">2</span>
+        <div id="containerCorIndividualP2" style="display:none; margin-top:10px;">
+          <p>Selecione o atributo de cada Bakugan:</p>
+          <label for="colorB1P2">Bakugan 1:</label>
+          <select id="colorB1P2" onchange="changeSingleBakuganColor('bakugan4', this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Azul">Aquos</option>
+            <option value="Vermelho">Pyrus</option>
+            <option value="Verde">Ventus</option>
+            <option value="Branco">Haos</option>
+            <option value="Laranja">Subterra</option>
+            <option value="Preto">Darkus</option>
+          </select>
+          <label for="colorB2P2">Bakugan 2:</label>
+          <select id="colorB2P2" onchange="changeSingleBakuganColor('bakugan5', this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Azul">Aquos</option>
+            <option value="Vermelho">Pyrus</option>
+            <option value="Verde">Ventus</option>
+            <option value="Branco">Haos</option>
+            <option value="Laranja">Subterra</option>
+            <option value="Preto">Darkus</option>
+          </select>
+          <label for="colorB3P2">Bakugan 3:</label>
+          <select id="colorB3P2" onchange="changeSingleBakuganColor('bakugan6', this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Azul">Aquos</option>
+            <option value="Vermelho">Pyrus</option>
+            <option value="Verde">Ventus</option>
+            <option value="Branco">Haos</option>
+            <option value="Laranja">Subterra</option>
+            <option value="Preto">Darkus</option>
+          </select>
         </div>
-        <div class="battlefield-card" id="card3">
-          <span class="card-number">3</span>
+        <div class="divider"></div>
+        <!-- JOGADOR 2: MODO DE COR -->
+        <h3>Jogador 2</h3>
+        <label for="modoCorP1">Modo de Atributo:</label>
+        <select id="modoCorP1" onchange="toggleColorMode('p1', this.value)">
+          <option value="">-- Selecione --</option>
+          <option value="unica">Atributo Único</option>
+          <option value="individual">Atributos Individuais</option>
+        </select>
+        <div id="containerCorUnicaP1" style="display:none;">
+          <label for="colorAllP1">Selecione o atributo (todos iguais):</label>
+          <select id="colorAllP1" onchange="changeBakuganColor('player1', this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Azul">Aquos</option>
+            <option value="Vermelho">Pyrus</option>
+            <option value="Verde">Ventus</option>
+            <option value="Branco">Haos</option>
+            <option value="Laranja">Subterra</option>
+            <option value="Preto">Darkus</option>
+          </select>
         </div>
-        <div class="battlefield-card" id="card4">
-          <span class="card-number">4</span>
-        </div>
-        <div class="battlefield-card" id="card5">
-          <span class="card-number">5</span>
-        </div>
-        <div class="battlefield-card" id="card6">
-          <span class="card-number">6</span>
-        </div>
-        <div class="battlefield-card" id="card7">
-          <span class="card-number">7</span>
-        </div>
-        <div class="battlefield-card" id="card8">
-          <span class="card-number">8</span>
-        </div>
-        <div class="battlefield-card" id="card9">
-          <span class="card-number">9</span>
-        </div>
-        <div class="battlefield-card" id="card10">
-          <span class="card-number">10</span>
-        </div>
-        <div class="battlefield-card" id="card11">
-          <span class="card-number">11</span>
-        </div>
-        <div class="battlefield-card" id="card12">
-          <span class="card-number">12</span>
+        <div id="containerCorIndividualP1" style="display:none; margin-top:10px;">
+          <p>Selecione o atributo de cada Bakugan:</p>
+          <label for="colorB4P1">Bakugan 1:</label>
+          <select id="colorB4P1" onchange="changeSingleBakuganColor('bakugan1', this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Azul">Aquos</option>
+            <option value="Vermelho">Pyrus</option>
+            <option value="Verde">Ventus</option>
+            <option value="Branco">Haos</option>
+            <option value="Laranja">Subterra</option>
+            <option value="Preto">Darkus</option>
+          </select>
+          <label for="colorB5P1">Bakugan 2:</label>
+          <select id="colorB5P1" onchange="changeSingleBakuganColor('bakugan2', this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Azul">Aquos</option>
+            <option value="Vermelho">Pyrus</option>
+            <option value="Verde">Ventus</option>
+            <option value="Branco">Haos</option>
+            <option value="Laranja">Subterra</option>
+            <option value="Preto">Darkus</option>
+          </select>
+          <label for="colorB6P1">Bakugan 3:</label>
+          <select id="colorB6P1" onchange="changeSingleBakuganColor('bakugan3', this.value)">
+            <option value="">-- Selecione --</option>
+            <option value="Azul">Aquos</option>
+            <option value="Vermelho">Pyrus</option>
+            <option value="Verde">Ventus</option>
+            <option value="Branco">Haos</option>
+            <option value="Laranja">Subterra</option>
+            <option value="Preto">Darkus</option>
+          </select>
         </div>
       </div>
+      <!-- Elemento para alternar a exibição da área de atributos -->
+      <p id="toggleAtributos" style="cursor: pointer; color: #ff5722; text-align: center;">Ocultar seleção</p>
     </div>
-    <div class="bakugan-container" id="containerPlayer2">
-      <div class="bakugan player2" draggable="true" id="bakugan4"></div>
-      <div class="bakugan player2" draggable="true" id="bakugan5"></div>
-      <div class="bakugan player2" draggable="true" id="bakugan6"></div>
-    </div>
-    <div class="health-bar-container" style="margin-top: 40px; display: flex; flex-direction: row-reverse;">
-      <div class="player-panel" style="left: auto; right: -80px;">
-        <img src="imgs/genericplayer.png" alt="Jogador 2" class="player-img" id="player2Img">
+
+    <!-- COLUNA PRINCIPAL (CENTRO) -->
+    <div class="main-column">
+      <h1 class="game-title">Arena de Batalha Bakugan</h1>
+      <div class="health-bar-container">
+        <div class="player-panel">
+          <img src="imgs/genericplayer.png" alt="Jogador 1" class="player-img" id="player1Img">
+        </div>
+        <div id="hp1" class="health-bar"></div>
       </div>
-      <div id="hp2" class="health-bar"></div>
+      <div class="bakugan-container" id="containerPlayer1">
+        <div class="bakugan player1" draggable="true" id="bakugan1"></div>
+        <div class="bakugan player1" draggable="true" id="bakugan2"></div>
+        <div class="bakugan player1" draggable="true" id="bakugan3"></div>
+      </div>
+      <div class="battle-container">
+        <div class="battlefield">
+          <div class="battlefield-card" id="card1">
+            <span class="card-number">1</span>
+          </div>
+          <div class="battlefield-card" id="card2">
+            <span class="card-number">2</span>
+          </div>
+          <div class="battlefield-card" id="card3">
+            <span class="card-number">3</span>
+          </div>
+          <div class="battlefield-card" id="card4">
+            <span class="card-number">4</span>
+          </div>
+          <div class="battlefield-card" id="card5">
+            <span class="card-number">5</span>
+          </div>
+          <div class="battlefield-card" id="card6">
+            <span class="card-number">6</span>
+          </div>
+          <div class="battlefield-card" id="card7">
+            <span class="card-number">7</span>
+          </div>
+          <div class="battlefield-card" id="card8">
+            <span class="card-number">8</span>
+          </div>
+          <div class="battlefield-card" id="card9">
+            <span class="card-number">9</span>
+          </div>
+          <div class="battlefield-card" id="card10">
+            <span class="card-number">10</span>
+          </div>
+          <div class="battlefield-card" id="card11">
+            <span class="card-number">11</span>
+          </div>
+          <div class="battlefield-card" id="card12">
+            <span class="card-number">12</span>
+          </div>
+        </div>
+      </div>
+      <div class="bakugan-container" id="containerPlayer2">
+        <div class="bakugan player2" draggable="true" id="bakugan4"></div>
+        <div class="bakugan player2" draggable="true" id="bakugan5"></div>
+        <div class="bakugan player2" draggable="true" id="bakugan6"></div>
+      </div>
+      <div class="health-bar-container" style="margin-top: 40px; display: flex; flex-direction: row-reverse;">
+        <div id="player-panel2" class="player-panel">
+          <img src="imgs/genericplayer.png" alt="Jogador 2" class="player-img" id="player2Img">
+        </div>
+        <div id="hp2" class="health-bar"></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR DIREITA -->
+    <div class="sidebar-controls-right">
+      <h2>Modo Solo?</h2>
+      <select id="modoSoloSelect">
+        <option value="nao">Não</option>
+        <option value="sim" selected>Sim</option>
+      </select>
+      <div id="soloOptions" style="display: block; margin-top: 15px;">
+        <h4>Ações do Jogador 2 (NPC)</h4>
+        <button onclick="rolarDadoCartaPortal()">Jogar carta portal? (0..1)</button>
+        <button onclick="rolarDadoStand()">Rolar dado para stand/jogar a carta portal (1..12)</button>
+        <button onclick="rolarDadoVaiDarStand()">Vai dar stand? (0..1)</button>
+        <button onclick="rolarDadoHabilidade()">Vai ativar habilidade? (0..1)</button>
+        <button onclick="rolarDadoGear()">Vai ativar Battle Gear/Trap/Mechtogan? (0..1)</button>
+        <button onclick="rolarDadoAtivarHab2()">Rolar dado para ativar (1..2)</button>
+        <button onclick="rolarDadoAtivarHab()">Rolar dado para ativar (1..3)</button>
+        <button onclick="rolarDadoAtivarHab3()">Rolar dado para ativar (1..4)</button>
+        <button onclick="rolarDadoAtivarHab4()">Rolar dado para ativar (1..5)</button>
+      </div>
+    </div>
+  </div> <!-- Fim page-container -->
+
+  <!-- MODAL de Sugestão de Deck -->
+  <div id="deckModal" class="deck-modal">
+    <div class="deck-modal-content">
+      <span class="deck-modal-close" onclick="closeDeckSuggestion()">&times;</span>
+      <h2 id="deckTitle"></h2>
+      <div class="deck-grid" id="deckGridContainer">
+        <!-- Conteúdo gerado dinamicamente -->
+      </div>
     </div>
   </div>
 
-  <!-- SIDEBAR DIREITA -->
-  <div class="sidebar-controls-right">
-    <h2>Modo Solo?</h2>
-    <select id="modoSoloSelect">
-      <option value="nao">Não</option>
-      <option value="sim" selected>Sim</option>
-    </select>
-    <div id="soloOptions" style="display: block; margin-top: 15px;">
-      <h4>Ações do Jogador 2 (NPC)</h4>
-      <button onclick="rolarDadoCartaPortal()">Jogar carta portal? (0..1)</button>
-      <button onclick="rolarDadoStand()">Rolar dado para stand/jogar a carta portal (1..12)</button>
-      <button onclick="rolarDadoVaiDarStand()">Vai dar stand? (0..1)</button>
-      <button onclick="rolarDadoHabilidade()">Vai ativar habilidade? (0..1)</button>
-      <button onclick="rolarDadoGear()">Vai ativar Battle Gear/Trap/Mechtogan? (0..1)</button>
-      <button onclick="rolarDadoAtivarHab2()">Rolar dado para ativar (1..2)</button>
-      <button onclick="rolarDadoAtivarHab()">Rolar dado para ativar (1..3)</button>
-      <button onclick="rolarDadoAtivarHab3()">Rolar dado para ativar (1..4)</button>
-      <button onclick="rolarDadoAtivarHab4()">Rolar dado para ativar (1..5)</button>
-    </div>
-  </div>
-</div> <!-- Fim page-container -->
+  <script>
+    let hp1 = 100;
+    let hp2 = 100;
 
-<!-- MODAL de Sugestão de Deck -->
-<div id="deckModal" class="deck-modal">
-  <div class="deck-modal-content">
-    <span class="deck-modal-close" onclick="closeDeckSuggestion()">&times;</span>
-    <h2 id="deckTitle"></h2>
-    <div class="deck-grid" id="deckGridContainer">
-      <!-- Vazio por padrão, será preenchido dinamicamente -->
-    </div>
-  </div>
-</div>
+    // MAPA DE DECKS (personalizado)
+    const decks = {
+      "Spectra": [
+        { title: "Spec Card 1", src: "imgs/spectra1.png" },
+        { title: "Spec Card 2", src: "imgs/spectra2.png" },
+        { title: "Spec Card 3", src: "imgs/spectra3.png" },
+        { title: "Spec Card 4", src: "imgs/spectra4.png" },
+        { title: "Spec Card 5", src: "imgs/spectra5.png" },
+        { title: "Spec Card 6", src: "imgs/spectra6.png" },
+        { title: "Spec Card 7", src: "imgs/spectra7.png" },
+        { title: "Spec Card 8", src: "imgs/spectra8.png" },
+        { title: "Spec Card 9", src: "imgs/spectra9.png" }
+      ],
+      "Dan": [
+        { title: "Pyrus Fusion Dragonoid (540g)", src: "imgs/bakugans/fusion_dragonoid.png" },
+        { title: "Pyrus Altair (670g)", src: "imgs/bakugans/altair.PNG" },
+        { title: "Pyrus Lumitroid (730g)", src: "imgs/bakugans/lumitroid.PNG" },
+        { title: "Ouro (Cleansing Fire)", src: "imgs/cartas/dan/ouro1.PNG" },
+        { title: "Prata (Lava Flow)", src: "imgs/cartas/dan/prata1.PNG" },
+        { title: "Bronze (Forth and Back)", src: "imgs/cartas/dan/bronze1.PNG" },
+        { title: "Verde (Pyrus)", src: "imgs/cartas/dan/verde1.PNG" },
+        { title: "Azul (Dragonoid Power)", src: "imgs/cartas/dan/azul1.PNG" },
+        { title: "Vermelho (Combo Battle)", src: "imgs/cartas/dan/vermelho1.PNG" }
+      ],
+      "Mira": [
+        { title: "Mira Card 1", src: "imgs/mira1.png" },
+        { title: "Mira Card 2", src: "imgs/mira2.png" }
+      ],
+      "Marucho": [
+        // Defina o deck para Marucho
+      ],
+      "Thur": [
+        { title: "Aquos Radizen (850g)", src: "imgs/bakugans/radizen.PNG" },
+        { title: "Aquos Mixn Elfin (540g)", src: "imgs/bakugans/elfin.PNG" },
+        { title: "Aquos Preyas II (700g/500g)", src: "imgs/bakugans/preyas2.PNG" },
+        { title: "Ouro (Sun Chains)", src: "imgs/cartas/thur/ouro1.PNG" },
+        { title: "Prata (Splash Gate)", src: "imgs/cartas/thur/prata1.PNG" },
+        { title: "Bronze (Low Bridge)", src: "imgs/cartas/thur/bronze1.PNG" },
+        { title: "Verde (Rain of Shadows)", src: "imgs/cartas/thur/verde1.PNG" },
+        { title: "Azul (Clean House)", src: "imgs/cartas/thur/azul1.PNG" },
+        { title: "Vermelho (Call of the Defenders)", src: "imgs/cartas/thur/vermelho1.PNG" },
+        { title: "Ouro Terrorcrest Gear (90g)", src: "imgs/bakugans/terrorcrest.PNG" },
+        { title: "Prata Airkor Gear (70g)", src: "imgs/bakugans/airkor_prata.PNG" },
+        { title: "Hab. Gear Terrorcrest", src: "imgs/cartas/thur/gear1.PNG" },
+        { title: "Hab. Gear Airkor", src: "imgs/cartas/thur/gear2.PNG" }
+      ],
+      "Player2 (Padrão)": [
+        { title: "Card 1", src: "imgs/deck1.png" },
+        { title: "Card 2", src: "imgs/deck2.png" },
+        { title: "Card 3", src: "imgs/deck3.png" },
+        { title: "Card 4", src: "imgs/deck4.png" },
+        { title: "Card 5", src: "imgs/deck5.png" },
+        { title: "Card 6", src: "imgs/deck6.png" },
+        { title: "Card 7", src: "imgs/deck7.png" },
+        { title: "Card 8", src: "imgs/deck8.png" },
+        { title: "Card 9", src: "imgs/deck9.png" }
+      ]
+    };
 
-<script>
-  let hp1 = 100;
-  let hp2 = 100;
-
-  // ---------------------------------------
-  // 1) MAPA DE DECKS (personalizado)
-  // ---------------------------------------
-  const decks = {
-    "Spectra": [
-      { title: "Spec Card 1", src: "imgs/spectra1.png" },
-      { title: "Spec Card 2", src: "imgs/spectra2.png" },
-      { title: "Spec Card 3", src: "imgs/spectra3.png" },
-      { title: "Spec Card 4", src: "imgs/spectra4.png" },
-      { title: "Spec Card 5", src: "imgs/spectra5.png" },
-      { title: "Spec Card 6", src: "imgs/spectra6.png" },
-      { title: "Spec Card 7", src: "imgs/spectra7.png" },
-      { title: "Spec Card 8", src: "imgs/spectra8.png" },
-      { title: "Spec Card 9", src: "imgs/spectra9.png" }
-    ],
-    "Dan": [
-      { title: "Pyrus Fusion Dragonoid (540g)", src: "imgs/bakugans/fusion_dragonoid.png" },
-      { title: "Pyrus Altair (670g)", src: "imgs/bakugans/altair.PNG" },
-      { title: "Pyrus Lumitroid (730g)", src: "imgs/bakugans/lumitroid.PNG" },
-      { title: "Ouro (Cleansing Fire)", src: "imgs/cartas/dan/ouro1.PNG" },
-      { title: "Prata (Lava Flow)", src: "imgs/cartas/dan/prata1.PNG" },
-      { title: "Bronze (Forth and Back)", src: "imgs/cartas/dan/bronze1.PNG" },
-      { title: "Verde (Pyrus)", src: "imgs/cartas/dan/verde1.PNG" },
-      { title: "Azul (Dragonoid Power)", src: "imgs/cartas/dan/azul1.PNG" },
-      { title: "Vermelho (Combo Battle)", src: "imgs/cartas/dan/vermelho1.PNG" }
-    ],
-    "Mira": [
-      { title: "Mira Card 1", src: "imgs/mira1.png" },
-      { title: "Mira Card 2", src: "imgs/mira2.png" }
-    ],
-    "Marucho": [
-      // Defina o deck para Marucho
-    ],
-    "Thur": [
-      { title: "Aquos Radizen (850g)", src: "imgs/bakugans/radizen.PNG" },
-      { title: "Aquos Mixn Elfin (540g)", src: "imgs/bakugans/elfin.PNG" },
-      { title: "Aquos Preyas II (700g/500g)", src: "imgs/bakugans/preyas2.PNG" },
-      { title: "Ouro (Sun Chains)", src: "imgs/cartas/thur/ouro1.PNG" },
-      { title: "Prata (Splash Gate)", src: "imgs/cartas/thur/prata1.PNG" },
-      { title: "Bronze (Low Bridge)", src: "imgs/cartas/thur/bronze1.PNG" },
-      { title: "Verde (Rain of Shadows)", src: "imgs/cartas/thur/verde1.PNG" },
-      { title: "Azul (Clean House)", src: "imgs/cartas/thur/azul1.PNG" },
-      { title: "Vermelho (Call of the Defenders)", src: "imgs/cartas/thur/vermelho1.PNG" },
-      { title: "Ouro Terrorcrest Gear (90g)", src: "imgs/bakugans/terrorcrest.PNG" },
-      { title: "Prata Airkor Gear (70g)", src: "imgs/bakugans/airkor_prata.PNG" },
-      { title: "Hab. Gear Terrorcrest", src: "imgs/cartas/thur/gear1.PNG" },
-      { title: "Hab. Gear Airkor", src: "imgs/cartas/thur/gear2.PNG" }
-    ],
-    "Player2 (Padrão)": [
-      { title: "Card 1", src: "imgs/deck1.png" },
-      { title: "Card 2", src: "imgs/deck2.png" },
-      { title: "Card 3", src: "imgs/deck3.png" },
-      { title: "Card 4", src: "imgs/deck4.png" },
-      { title: "Card 5", src: "imgs/deck5.png" },
-      { title: "Card 6", src: "imgs/deck6.png" },
-      { title: "Card 7", src: "imgs/deck7.png" },
-      { title: "Card 8", src: "imgs/deck8.png" },
-      { title: "Card 9", src: "imgs/deck9.png" }
-    ]
-  };
-
-  function playDamageSound() {
-    const damageSound = document.getElementById("damageSound");
-    if(damageSound) damageSound.play();
-  }
-
-  function playDamageSound0() {
-    const damageSoundZeroHp = document.getElementById("damageSoundZeroHp");
-    if(damageSoundZeroHp) damageSoundZeroHp.play();
-  }
-
-  function updateHealthBar(healthBar, hp, isPlayer2 = false) {
-    healthBar.style.width = hp + "%";
-    if (hp > 60) {
-      healthBar.style.background = isPlayer2
-        ? "linear-gradient(270deg,rgb(255, 0, 0) 0%, rgb(255, 195, 84) 40%, rgb(255, 255, 121) 70%, rgb(31, 233, 31) 100%)"
-        : "linear-gradient(90deg,rgb(255, 0, 0) 0%, rgb(255, 195, 84) 40%, rgb(255, 255, 121) 70%, rgb(31, 233, 31) 100%)";
-    } else if (hp > 30) {
-      healthBar.style.background = isPlayer2
-        ? "linear-gradient(270deg,rgb(255, 0, 0) 0%, rgb(255, 165, 0) 50%, rgb(255, 255, 0) 100%)"
-        : "linear-gradient(90deg,rgb(255, 0, 0) 0%, rgb(255, 165, 0) 50%, rgb(255, 255, 0) 100%)";
-    } else {
-      healthBar.style.background = "linear-gradient(90deg, red 0%, darkred 100%)";
+    function playDamageSound() {
+      const damageSound = document.getElementById("damageSound");
+      if(damageSound) damageSound.play();
     }
-  }
 
-  updateHealthBar(document.getElementById("hp1"), hp1);
-  updateHealthBar(document.getElementById("hp2"), hp2, true);
-
-  function applyDamage() {
-    let winner = document.getElementById("winner").value;
-    let gPower = parseInt(document.getElementById("gPower").value);
-    let damage = 0;
-    if (gPower >= 10 && gPower <= 100) {
-      damage = Math.random() * (20 - 10) + 10;
-    } else if (gPower >= 110 && gPower <= 200) {
-      damage = Math.random() * (40 - 30) + 30;
-    } else if (gPower > 200 && gPower <= 350) {
-      damage = Math.random() * (55 - 45) + 45;
-    } else if (gPower > 350) {
-      damage = Math.random() * (70 - 60) + 60;
+    function playDamageSound0() {
+      const damageSoundZeroHp = document.getElementById("damageSoundZeroHp");
+      if(damageSoundZeroHp) damageSoundZeroHp.play();
     }
-    if (winner === "jogador1") {
-      let oldHp = hp1;
-      hp1 -= damage;
-      if (hp1 < 0) hp1 = 0;
-      if (hp1 < oldHp && hp1 !== 0) playDamageSound();
-      if (hp1 === 0) {
-        alert("Jogador 2 venceu a batalha!");
-        playDamageSound0();
+
+    function updateHealthBar(healthBar, hp, isPlayer2 = false) {
+      healthBar.style.width = hp + "%";
+      if (hp > 60) {
+        healthBar.style.background = isPlayer2
+          ? "linear-gradient(270deg,rgb(255, 0, 0) 0%, rgb(255, 195, 84) 40%, rgb(255, 255, 121) 70%, rgb(31, 233, 31) 100%)"
+          : "linear-gradient(90deg,rgb(255, 0, 0) 0%, rgb(255, 195, 84) 40%, rgb(255, 255, 121) 70%, rgb(31, 233, 31) 100%)";
+      } else if (hp > 30) {
+        healthBar.style.background = isPlayer2
+          ? "linear-gradient(270deg,rgb(255, 0, 0) 0%, rgb(255, 165, 0) 50%, rgb(255, 255, 0) 100%)"
+          : "linear-gradient(90deg,rgb(255, 0, 0) 0%, rgb(255, 165, 0) 50%, rgb(255, 255, 0) 100%)";
+      } else {
+        healthBar.style.background = "linear-gradient(90deg, red 0%, darkred 100%)";
       }
-      updateHealthBar(document.getElementById("hp1"), hp1);
-    } else {
-      let oldHp = hp2;
-      hp2 -= damage;
-      if (hp2 < 0) hp2 = 0;
-      if (hp2 < oldHp && hp2 !== 0) playDamageSound();
-      if (hp2 === 0) {
-        alert("Jogador 1 venceu a batalha!");
-        playDamageSound0();
+    }
+
+    updateHealthBar(document.getElementById("hp1"), hp1);
+    updateHealthBar(document.getElementById("hp2"), hp2, true);
+
+    function applyDamage() {
+      let winner = document.getElementById("winner").value;
+      let gPower = parseInt(document.getElementById("gPower").value);
+      let damage = 0;
+      if (gPower >= 10 && gPower <= 100) {
+        damage = Math.random() * (20 - 10) + 10;
+      } else if (gPower >= 110 && gPower <= 200) {
+        damage = Math.random() * (40 - 30) + 30;
+      } else if (gPower > 200 && gPower <= 350) {
+        damage = Math.random() * (55 - 45) + 45;
+      } else if (gPower > 350) {
+        damage = Math.random() * (70 - 60) + 60;
       }
-      updateHealthBar(document.getElementById("hp2"), hp2, true);
+      if (winner === "jogador1") {
+        let oldHp = hp1;
+        hp1 -= damage;
+        if (hp1 < 0) hp1 = 0;
+        if (hp1 < oldHp && hp1 !== 0) playDamageSound();
+        if (hp1 === 0) {
+          alert("Jogador 2 venceu a batalha!");
+          playDamageSound0();
+        }
+        updateHealthBar(document.getElementById("hp1"), hp1);
+      } else {
+        let oldHp = hp2;
+        hp2 -= damage;
+        if (hp2 < 0) hp2 = 0;
+        if (hp2 < oldHp && hp2 !== 0) playDamageSound();
+        if (hp2 === 0) {
+          alert("Jogador 1 venceu a batalha!");
+          playDamageSound0();
+        }
+        updateHealthBar(document.getElementById("hp2"), hp2, true);
+      }
     }
-  }
 
-  document.querySelectorAll(".battlefield-card").forEach(card => {
-    card.addEventListener("click", function() {
-      this.classList.toggle("active");
-    });
-  });
-
-  document.querySelectorAll(".bakugan").forEach(bakugan => {
-    bakugan.addEventListener("dragstart", function(event) {
-      event.dataTransfer.setData("text/plain", event.target.id);
-    });
-  });
-
-  document.querySelectorAll(".battlefield-card").forEach(card => {
-    card.addEventListener("dragover", function(event) {
-      event.preventDefault();
-    });
-    card.addEventListener("drop", function(event) {
-      event.preventDefault();
-      const bakuganId = event.dataTransfer.getData("text/plain");
-      const bakugan = document.getElementById(bakuganId);
-      card.appendChild(bakugan);
-    });
-  });
-
-  const containerP1 = document.getElementById("containerPlayer1");
-  containerP1.addEventListener("dragover", function(event) {
-    event.preventDefault();
-  });
-  containerP1.addEventListener("drop", function(event) {
-    event.preventDefault();
-    const bakuganId = event.dataTransfer.getData("text/plain");
-    const bakugan = document.getElementById(bakuganId);
-    if (bakugan.classList.contains("player1")) {
-      containerP1.appendChild(bakugan);
-    }
-  });
-
-  const containerP2 = document.getElementById("containerPlayer2");
-  containerP2.addEventListener("dragover", function(event) {
-    event.preventDefault();
-  });
-  containerP2.addEventListener("drop", function(event) {
-    event.preventDefault();
-    const bakuganId = event.dataTransfer.getData("text/plain");
-    const bakugan = document.getElementById(bakuganId);
-    if (bakugan.classList.contains("player2")) {
-      containerP2.appendChild(bakugan);
-    }
-  });
-
-  function resetArena() {
     document.querySelectorAll(".battlefield-card").forEach(card => {
-      card.querySelectorAll(".bakugan").forEach(b => b.remove());
+      card.addEventListener("click", function() {
+        this.classList.toggle("active");
+      });
     });
-    containerP1.innerHTML = `
-      <div class="bakugan player1" draggable="true" id="bakugan1"></div>
-      <div class="bakugan player1" draggable="true" id="bakugan2"></div>
-      <div class="bakugan player1" draggable="true" id="bakugan3"></div>
-    `;
-    containerP2.innerHTML = `
-      <div class="bakugan player2" draggable="true" id="bakugan4"></div>
-      <div class="bakugan player2" draggable="true" id="bakugan5"></div>
-      <div class="bakugan player2" draggable="true" id="bakugan6"></div>
-    `;
+
     document.querySelectorAll(".bakugan").forEach(bakugan => {
       bakugan.addEventListener("dragstart", function(event) {
         event.dataTransfer.setData("text/plain", event.target.id);
       });
     });
-    const modoP1 = document.getElementById("modoCorP1").value;
-    if (modoP1 === "unica") {
-      const corUnicaP1 = document.getElementById("colorAllP1").value;
-      if (corUnicaP1) changeBakuganColor("player1", corUnicaP1);
-    } else if (modoP1 === "individual") {
-      changeSingleBakuganColor("bakugan1", document.getElementById("colorB4P1").value);
-      changeSingleBakuganColor("bakugan2", document.getElementById("colorB5P1").value);
-      changeSingleBakuganColor("bakugan3", document.getElementById("colorB6P1").value);
-    }
-    const modoP2 = document.getElementById("modoCorP2").value;
-    if (modoP2 === "unica") {
-      const corUnicaP2 = document.getElementById("colorAllP2").value;
-      if (corUnicaP2) changeBakuganColor("player2", corUnicaP2);
-    } else if (modoP2 === "individual") {
-      changeSingleBakuganColor("bakugan4", document.getElementById("colorB1P2").value);
-      changeSingleBakuganColor("bakugan5", document.getElementById("colorB2P2").value);
-      changeSingleBakuganColor("bakugan6", document.getElementById("colorB3P2").value);
-    }
-  }
 
-  function resetGame() {
-    hp1 = 100;
-    hp2 = 100;
-    updateHealthBar(document.getElementById("hp1"), hp1);
-    updateHealthBar(document.getElementById("hp2"), hp2, true);
-    resetArena();
-  }
-
-  const modoSoloSelect = document.getElementById("modoSoloSelect");
-  const soloOptions = document.getElementById("soloOptions");
-  modoSoloSelect.addEventListener("change", function(e) {
-    soloOptions.style.display = e.target.value === "sim" ? "block" : "none";
-  });
-
-  function rolarDadoCartaPortal() {
-    const result = Math.floor(Math.random() * 2);
-    alert(`Jogar carta portal? ${result === 0 ? "NÃO" : "SIM"}`);
-  }
-  function rolarDadoVaiDarStand() {
-    const result = Math.floor(Math.random() * 2);
-    alert(`Vai dar stand? ${result === 0 ? "NÃO" : "SIM"}`);
-  }
-  function rolarDadoStand() {
-    const result = Math.floor(Math.random() * 12) + 1;
-    alert(`Stand/Jogar na carta portal: ${result}`);
-  }
-  function rolarDadoHabilidade() {
-    const result = Math.floor(Math.random() * 2);
-    alert(`Habilidade: ${result === 0 ? "NÃO" : "SIM"}`);
-  }
-  function rolarDadoGear() {
-    const result = Math.floor(Math.random() * 2);
-    alert(`Ativar Battle Gear/Trap/Mechtogan: ${result === 0 ? "NÃO" : "SIM"}`);
-  }
-  function rolarDadoAtivarHab() {
-    const result = Math.floor(Math.random() * 3) + 1;
-    alert(`Ativar habilidade: ${result}`);
-  }
-  function rolarDadoAtivarHab2() {
-    const result = Math.floor(Math.random() * 2) + 1;
-    alert(`Ativar habilidade: ${result}`);
-  }
-  function rolarDadoAtivarHab3() {
-    const result = Math.floor(Math.random() * 4) + 1;
-    alert(`Ativar habilidade: ${result}`);
-  }
-  function rolarDadoAtivarHab4() {
-    const result = Math.floor(Math.random() * 5) + 1;
-    alert(`Ativar habilidade: ${result}`);
-  }
-
-  const player1Img = document.getElementById("player1Img");
-  const player2Img = document.getElementById("player2Img");
-  document.getElementById("player1Select")?.addEventListener("change", function(e) {
-    player1Img.src = e.target.value;
-  });
-  document.getElementById("player2Select")?.addEventListener("change", function(e) {
-    player2Img.src = e.target.value;
-  });
-
-  function toggleColorMode(playerPrefix, mode) {
-    const containerUnica = document.getElementById(`containerCorUnica${playerPrefix.toUpperCase()}`);
-    const containerIndividual = document.getElementById(`containerCorIndividual${playerPrefix.toUpperCase()}`);
-    if(mode === 'unica') {
-      containerUnica.style.display = 'block';
-      containerIndividual.style.display = 'none';
-    } else if(mode === 'individual') {
-      containerUnica.style.display = 'none';
-      containerIndividual.style.display = 'block';
-    } else {
-      containerUnica.style.display = 'none';
-      containerIndividual.style.display = 'none';
-    }
-  }
-
-  function changeBakuganColor(player, color) {
-    const bakugans = document.querySelectorAll(`.bakugan.${player}`);
-    let gradientColor;
-    switch(color) {
-      case "Azul":
-        gradientColor = "radial-gradient(circle, #0000ff, #00008b)";
-        break;
-      case "Vermelho":
-        gradientColor = "radial-gradient(circle, #ff0000, #8b0000)";
-        break;
-      case "Verde":
-        gradientColor = "radial-gradient(circle, #00ff00, #006400)";
-        break;
-      case "Branco":
-        gradientColor = "radial-gradient(circle, rgba(199,199,199,1) 0%, rgba(181,181,181,1) 100%)";
-        break;
-      case "Laranja":
-        gradientColor = "radial-gradient(circle, #ffa500, #ff4500)";
-        break;
-      case "Preto":
-        gradientColor = "radial-gradient(circle, #000000, #333333)";
-        break;
-      default:
-        gradientColor = "radial-gradient(circle, #ccc, #999)";
-    }
-    bakugans.forEach(b => {
-      b.style.background = gradientColor;
-    });
-  }
-
-  function changeSingleBakuganColor(bakuganId, color) {
-    const bakugan = document.getElementById(bakuganId);
-    if (!bakugan) return;
-    let gradientColor = "radial-gradient(circle, #ccc, #999)";
-    switch(color) {
-      case "Azul":
-        gradientColor = "radial-gradient(circle, #0000ff, #00008b)";
-        break;
-      case "Vermelho":
-        gradientColor = "radial-gradient(circle, #ff0000, #8b0000)";
-        break;
-      case "Verde":
-        gradientColor = "radial-gradient(circle, #00ff00, #006400)";
-        break;
-      case "Branco":
-        gradientColor = "radial-gradient(circle, rgba(199,199,199,1) 0%, rgba(181,181,181,1) 100%)";
-        break;
-      case "Laranja":
-        gradientColor = "radial-gradient(circle, #ffa500, #ff4500)";
-        break;
-      case "Preto":
-        gradientColor = "radial-gradient(circle, #000000, #333333)";
-        break;
-      default:
-        gradientColor = "radial-gradient(circle, #ccc, #999)";
-    }
-    bakugan.style.background = gradientColor;
-  }
-
-  // =========================
-  //  FUNÇÕES DO MODAL (deck)
-  // =========================
-  function openDeckSuggestion() {
-    const select = document.getElementById("player1Select");
-    const nomeSelecionado = select.options[select.selectedIndex].text;
-    const deckTitle = document.getElementById("deckTitle");
-    deckTitle.innerText = `Sugestão de Deck para ${nomeSelecionado}`;
-    const deck = decks[nomeSelecionado];
-    const deckGridContainer = document.getElementById("deckGridContainer");
-    deckGridContainer.innerHTML = "";
-    if (deck && deck.length > 0) {
-      deck.forEach(carta => {
-        const cell = document.createElement("div");
-        const h5 = document.createElement("h5");
-        h5.textContent = carta.title;
-        const img = document.createElement("img");
-        img.src = carta.src;
-        img.alt = carta.title;
-        cell.appendChild(h5);
-        cell.appendChild(img);
-        deckGridContainer.appendChild(cell);
+    document.querySelectorAll(".battlefield-card").forEach(card => {
+      card.addEventListener("dragover", function(event) {
+        event.preventDefault();
       });
-    } else {
-      const msg = document.createElement("p");
-      msg.textContent = "Nenhum deck configurado para este personagem.";
-      deckGridContainer.appendChild(msg);
+      card.addEventListener("drop", function(event) {
+        event.preventDefault();
+        const bakuganId = event.dataTransfer.getData("text/plain");
+        const bakugan = document.getElementById(bakuganId);
+        card.appendChild(bakugan);
+      });
+    });
+
+    const containerP1 = document.getElementById("containerPlayer1");
+    containerP1.addEventListener("dragover", function(event) {
+      event.preventDefault();
+    });
+    containerP1.addEventListener("drop", function(event) {
+      event.preventDefault();
+      const bakuganId = event.dataTransfer.getData("text/plain");
+      const bakugan = document.getElementById(bakuganId);
+      if (bakugan.classList.contains("player1")) {
+        containerP1.appendChild(bakugan);
+      }
+    });
+
+    const containerP2 = document.getElementById("containerPlayer2");
+    containerP2.addEventListener("dragover", function(event) {
+      event.preventDefault();
+    });
+    containerP2.addEventListener("drop", function(event) {
+      event.preventDefault();
+      const bakuganId = event.dataTransfer.getData("text/plain");
+      const bakugan = document.getElementById(bakuganId);
+      if (bakugan.classList.contains("player2")) {
+        containerP2.appendChild(bakugan);
+      }
+    });
+
+    function resetArena() {
+      document.querySelectorAll(".battlefield-card").forEach(card => {
+        card.querySelectorAll(".bakugan").forEach(b => b.remove());
+      });
+      containerP1.innerHTML = `
+        <div class="bakugan player1" draggable="true" id="bakugan1"></div>
+        <div class="bakugan player1" draggable="true" id="bakugan2"></div>
+        <div class="bakugan player1" draggable="true" id="bakugan3"></div>
+      `;
+      containerP2.innerHTML = `
+        <div class="bakugan player2" draggable="true" id="bakugan4"></div>
+        <div class="bakugan player2" draggable="true" id="bakugan5"></div>
+        <div class="bakugan player2" draggable="true" id="bakugan6"></div>
+      `;
+      document.querySelectorAll(".bakugan").forEach(bakugan => {
+        bakugan.addEventListener("dragstart", function(event) {
+          event.dataTransfer.setData("text/plain", event.target.id);
+        });
+      });
+      const modoP1 = document.getElementById("modoCorP1").value;
+      if (modoP1 === "unica") {
+        const corUnicaP1 = document.getElementById("colorAllP1").value;
+        if (corUnicaP1) changeBakuganColor("player1", corUnicaP1);
+      } else if (modoP1 === "individual") {
+        changeSingleBakuganColor("bakugan1", document.getElementById("colorB4P1").value);
+        changeSingleBakuganColor("bakugan2", document.getElementById("colorB5P1").value);
+        changeSingleBakuganColor("bakugan3", document.getElementById("colorB6P1").value);
+      }
+      const modoP2 = document.getElementById("modoCorP2").value;
+      if (modoP2 === "unica") {
+        const corUnicaP2 = document.getElementById("colorAllP2").value;
+        if (corUnicaP2) changeBakuganColor("player2", corUnicaP2);
+      } else if (modoP2 === "individual") {
+        changeSingleBakuganColor("bakugan4", document.getElementById("colorB1P2").value);
+        changeSingleBakuganColor("bakugan5", document.getElementById("colorB2P2").value);
+        changeSingleBakuganColor("bakugan6", document.getElementById("colorB3P2").value);
+      }
     }
-    document.getElementById("deckModal").style.display = "block";
-  }
 
-  function closeDeckSuggestion() {
-    document.getElementById("deckModal").style.display = "none";
-  }
+    function resetGame() {
+      hp1 = 100;
+      hp2 = 100;
+      updateHealthBar(document.getElementById("hp1"), hp1);
+      updateHealthBar(document.getElementById("hp2"), hp2, true);
+      resetArena();
+    }
 
-  document.getElementById("player1Select").addEventListener("change", function() {
-    const nomeSelecionado = this.options[this.selectedIndex].text;
-    document.getElementById("deckBtn2").innerText = `Ver sugestão para Deck de ${nomeSelecionado}`;
-  });
-</script>
+    const modoSoloSelect = document.getElementById("modoSoloSelect");
+    const soloOptions = document.getElementById("soloOptions");
+    modoSoloSelect.addEventListener("change", function(e) {
+      soloOptions.style.display = e.target.value === "sim" ? "block" : "none";
+    });
+
+    function rolarDadoCartaPortal() {
+      const result = Math.floor(Math.random() * 2);
+      alert(`Jogar carta portal? ${result === 0 ? "NÃO" : "SIM"}`);
+    }
+    function rolarDadoVaiDarStand() {
+      const result = Math.floor(Math.random() * 2);
+      alert(`Vai dar stand? ${result === 0 ? "NÃO" : "SIM"}`);
+    }
+    function rolarDadoStand() {
+      const result = Math.floor(Math.random() * 12) + 1;
+      alert(`Stand/Jogar na carta portal: ${result}`);
+    }
+    function rolarDadoHabilidade() {
+      const result = Math.floor(Math.random() * 2);
+      alert(`Habilidade: ${result === 0 ? "NÃO" : "SIM"}`);
+    }
+    function rolarDadoGear() {
+      const result = Math.floor(Math.random() * 2);
+      alert(`Ativar Battle Gear/Trap/Mechtogan: ${result === 0 ? "NÃO" : "SIM"}`);
+    }
+    function rolarDadoAtivarHab() {
+      const result = Math.floor(Math.random() * 3) + 1;
+      alert(`Ativar habilidade: ${result}`);
+    }
+    function rolarDadoAtivarHab2() {
+      const result = Math.floor(Math.random() * 2) + 1;
+      alert(`Ativar habilidade: ${result}`);
+    }
+    function rolarDadoAtivarHab3() {
+      const result = Math.floor(Math.random() * 4) + 1;
+      alert(`Ativar habilidade: ${result}`);
+    }
+    function rolarDadoAtivarHab4() {
+      const result = Math.floor(Math.random() * 5) + 1;
+      alert(`Ativar habilidade: ${result}`);
+    }
+
+    const player1Img = document.getElementById("player1Img");
+    const player2Img = document.getElementById("player2Img");
+    document.getElementById("player1Select")?.addEventListener("change", function(e) {
+      player1Img.src = e.target.value;
+    });
+    document.getElementById("player2Select")?.addEventListener("change", function(e) {
+      player2Img.src = e.target.value;
+    });
+
+    function toggleColorMode(playerPrefix, mode) {
+      const containerUnica = document.getElementById(`containerCorUnica${playerPrefix.toUpperCase()}`);
+      const containerIndividual = document.getElementById(`containerCorIndividual${playerPrefix.toUpperCase()}`);
+      if(mode === 'unica') {
+        containerUnica.style.display = 'block';
+        containerIndividual.style.display = 'none';
+      } else if(mode === 'individual') {
+        containerUnica.style.display = 'none';
+        containerIndividual.style.display = 'block';
+      } else {
+        containerUnica.style.display = 'none';
+        containerIndividual.style.display = 'none';
+      }
+    }
+
+    function changeBakuganColor(player, color) {
+      const bakugans = document.querySelectorAll(`.bakugan.${player}`);
+      let gradientColor;
+      switch(color) {
+        case "Azul":
+          gradientColor = "radial-gradient(circle, #0000ff, #00008b)";
+          break;
+        case "Vermelho":
+          gradientColor = "radial-gradient(circle, #ff0000, #8b0000)";
+          break;
+        case "Verde":
+          gradientColor = "radial-gradient(circle, #00ff00, #006400)";
+          break;
+        case "Branco":
+          gradientColor = "radial-gradient(circle, rgba(199,199,199,1) 0%, rgba(181,181,181,1) 100%)";
+          break;
+        case "Laranja":
+          gradientColor = "radial-gradient(circle, #ffa500, #ff4500)";
+          break;
+        case "Preto":
+          gradientColor = "radial-gradient(circle, #000000, #333333)";
+          break;
+        default:
+          gradientColor = "radial-gradient(circle, #ccc, #999)";
+      }
+      bakugans.forEach(b => {
+        b.style.background = gradientColor;
+      });
+    }
+
+    function changeSingleBakuganColor(bakuganId, color) {
+      const bakugan = document.getElementById(bakuganId);
+      if (!bakugan) return;
+      let gradientColor = "radial-gradient(circle, #ccc, #999)";
+      switch(color) {
+        case "Azul":
+          gradientColor = "radial-gradient(circle, #0000ff, #00008b)";
+          break;
+        case "Vermelho":
+          gradientColor = "radial-gradient(circle, #ff0000, #8b0000)";
+          break;
+        case "Verde":
+          gradientColor = "radial-gradient(circle, #00ff00, #006400)";
+          break;
+        case "Branco":
+          gradientColor = "radial-gradient(circle, rgba(199,199,199,1) 0%, rgba(181,181,181,1) 100%)";
+          break;
+        case "Laranja":
+          gradientColor = "radial-gradient(circle, #ffa500, #ff4500)";
+          break;
+        case "Preto":
+          gradientColor = "radial-gradient(circle, #000000, #333333)";
+          break;
+        default:
+          gradientColor = "radial-gradient(circle, #ccc, #999)";
+      }
+      bakugan.style.background = gradientColor;
+    }
+
+    // FUNÇÕES DO MODAL (deck)
+    function openDeckSuggestion() {
+      const select = document.getElementById("player1Select");
+      const nomeSelecionado = select.options[select.selectedIndex].text;
+      const deckTitle = document.getElementById("deckTitle");
+      deckTitle.innerText = `Sugestão de Deck para ${nomeSelecionado}`;
+      const deck = decks[nomeSelecionado];
+      const deckGridContainer = document.getElementById("deckGridContainer");
+      deckGridContainer.innerHTML = "";
+      if (deck && deck.length > 0) {
+        deck.forEach(carta => {
+          const cell = document.createElement("div");
+          const h5 = document.createElement("h5");
+          h5.textContent = carta.title;
+          const img = document.createElement("img");
+          img.src = carta.src;
+          img.alt = carta.title;
+          cell.appendChild(h5);
+          cell.appendChild(img);
+          deckGridContainer.appendChild(cell);
+        });
+      } else {
+        const msg = document.createElement("p");
+        msg.textContent = "Nenhum deck configurado para este personagem.";
+        deckGridContainer.appendChild(msg);
+      }
+      document.getElementById("deckModal").style.display = "block";
+    }
+
+    function closeDeckSuggestion() {
+      document.getElementById("deckModal").style.display = "none";
+    }
+
+    document.getElementById("player1Select").addEventListener("change", function() {
+      const nomeSelecionado = this.options[this.selectedIndex].text;
+      document.getElementById("deckBtn2").innerText = `Ver sugestão para Deck de ${nomeSelecionado}`;
+    });
+
+    // FUNÇÃO PARA OCULTAR/EXIBIR A ÁREA DE ATRIBUTOS
+    document.getElementById("toggleAtributos").addEventListener("click", function() {
+      var container = document.getElementById("atributosContainer");
+      if (container.style.display === "none") {
+        container.style.display = "block";
+        this.innerText = "Ocultar seleção";
+      } else {
+        container.style.display = "none";
+        this.innerText = "Expandir seleção";
+      }
+    });
+  </script>
 </body>
 </html>
