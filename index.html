@@ -34,7 +34,7 @@
       justify-content: center;
       padding: 20px;
       background-color: rgba(55, 82, 100, 0.283);
-      position: relative; /* Garante que a page-container não se sobreponha à logo */
+      position: relative;
     }
 
     .sidebar-controls {
@@ -226,7 +226,7 @@
       border-color: #ff5722;
     }
 
-    /* Apenas para separar visualmente */
+    /* Separador visual */
     .divider {
       border-top: 1px solid #aaa;
       margin: 15px 0;
@@ -287,22 +287,67 @@
     .deck-grid img {
       width: 100px;
       height: 140px;
-      object-fit: cover;
+      object-fit: contain;
       border: 2px solid #fff;
       box-shadow: 0 0 8px rgba(255,255,255,0.5);
     }
-    /* Para a primeira linha do grid, usamos "object-fit: contain"
-       para exibir a imagem inteira, sem corte */
+    /* Para a primeira linha do grid, mantemos object-fit: contain */
     .deck-grid div:nth-child(-n+3) img {
       width: 100px;
       height: 140px;
       object-fit: contain;
     }
+
+    /* -----------------------------
+       MEDIA QUERIES PARA MOBILE
+       ----------------------------- */
+    @media only screen and (max-width: 480px) {
+      /* Remover a logo no mobile */
+      .logo-container {
+        display: none;
+      }
+      /* Reduz a altura das barras de HP */
+      .health-bar {
+        height: 30px;
+      }
+      /* Ajusta os contêineres para empilhar verticalmente */
+      .page-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .sidebar-controls,
+      .sidebar-controls-right {
+        width: 90%;
+        margin: 10px auto;
+      }
+      .main-column {
+        width: 100%;
+        min-width: auto;
+      }
+      /* Ajusta o campo de batalha (arena) */
+      .battlefield {
+        width: 90%;
+        height: auto; /* altura automática para adaptação */
+        margin: 10px auto;
+      }
+      /* Reduz um pouco o tamanho dos textos da arena */
+      .battlefield-card {
+        font-size: 16px;
+      }
+      .card-number {
+        font-size: 18px;
+      }
+      /* Ajusta o modal para ocupar quase toda a largura */
+      .deck-modal-content {
+        width: 90%;
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
 
-<!-- LOGO NO TOPO ESQUERDO -->
+<!-- LOGO NO TOPO ESQUERDO (oculta no mobile via media query) -->
 <div class="logo-container">
   <img src="imgs/bakugan_logo.png" alt="Logo do jogo">
 </div>
@@ -330,10 +375,11 @@
       <option value="imgs/mira.png">Mira</option>
       <option value="imgs/marucho.png">Marucho</option>
       <option value="imgs/dan.png">Dan</option>
+      <option value="imgs/iconcanal2.png">Thur</option>
     </select>
     <!-- Botão para ver sugestão de deck -->
     <button id="deckBtn2" onclick="openDeckSuggestion()">
-      Ver sugestão de Deck do Jogador 2
+      Ver sugestão para Deck do Jogador 2
     </button>
     <h2>Configurações</h2>
     <label for="winner">Quem venceu a batalha?</label>
@@ -581,15 +627,15 @@
       { title: "Spec Card 9", src: "imgs/spectra9.png" }
     ],
     "Dan": [
-      { title: "Pyrus Fusion Dragonoid", src: "imgs/bakugans/fusion_dragonoid.png" },
-      { title: "Pyrus Altair", src: "imgs/bakugans/altair.PNG" },
-      { title: "Pyrus Lumitroid", src: "imgs/bakugans/lumitroid.PNG" },
-      { title: "Ouro (Cleansing Fire)", src: "imgs/cartas/dan/ouro1.PNG" },
-      { title: "Prata (Lava Flow)", src: "imgs/cartas/dan/prata1.PNG" },
-      { title: "Bronze (Forth and Back)", src: "imgs/cartas/dan/bronze1.PNG" },
-      { title: "Verde (Pyrus)", src: "imgs/cartas/dan/verde1.PNG" },
-      { title: "Azul (Dragonoid Power)", src: "imgs/cartas/dan/azul1.PNG" },
-      { title: "Vermelho (Combo Battle)", src: "imgs/cartas/dan/vermelho1.PNG" }
+      { title: "Pyrus Fusion Dragonoid (540g)", src: "imgs/bakugans/fusion_dragonoid.png" },
+      { title: "Pyrus Altair (670g)", src: "imgs/bakugans/altair.png" },
+      { title: "Pyrus Lumitroid (730g)", src: "imgs/bakugans/lumitroid.png" },
+      { title: "Ouro (Cleansing Fire)", src: "imgs/cartas/dan/ouro1.png" },
+      { title: "Prata (Lava Flow)", src: "imgs/cartas/dan/prata1.png" },
+      { title: "Bronze (Forth and Back)", src: "imgs/cartas/dan/bronze1.png" },
+      { title: "Verde (Pyrus)", src: "imgs/cartas/dan/verde1.png" },
+      { title: "Azul (Dragonoid Power)", src: "imgs/cartas/dan/azul1.png" },
+      { title: "Vermelho (Combo Battle)", src: "imgs/cartas/dan/vermelho1.png" }
     ],
     "Mira": [
       { title: "Mira Card 1", src: "imgs/mira1.png" },
@@ -597,6 +643,21 @@
     ],
     "Marucho": [
       // Defina o deck para Marucho
+    ],
+    "Thur": [
+      { title: "Aquos Radizen (850g)", src: "imgs/bakugans/radizen.png" },
+      { title: "Aquos Mixn Elfin (540g)", src: "imgs/bakugans/elfin.png" },
+      { title: "Aquos Preyas II (700g/500g)", src: "imgs/bakugans/preyas2.png" },
+      { title: "Ouro (Sun Chains)", src: "imgs/cartas/thur/ouro1.png" },
+      { title: "Prata (Splash Gate)", src: "imgs/cartas/thur/prata1.png" },
+      { title: "Bronze (Low Bridge)", src: "imgs/cartas/thur/bronze1.png" },
+      { title: "Verde (Rain of Shadows)", src: "imgs/cartas/thur/verde1.png" },
+      { title: "Azul (Clean House)", src: "imgs/cartas/thur/azul1.png" },
+      { title: "Vermelho (Call of the Defenders)", src: "imgs/cartas/thur/vermelho1.png" },
+      { title: "Ouro Terrorcrest Gear (90g)", src: "imgs/bakugans/terrorcrest.png" },
+      { title: "Prata Airkor Gear (70g)", src: "imgs/bakugans/airkor_prata.png" },
+      { title: "Hab. Gear Terrorcrest", src: "imgs/cartas/thur/gear1.png" },
+      { title: "Hab. Gear Airkor", src: "imgs/cartas/thur/gear2.png" }
     ],
     "Player2 (Padrão)": [
       { title: "Card 1", src: "imgs/deck1.png" },
@@ -935,7 +996,7 @@
 
   document.getElementById("player1Select").addEventListener("change", function() {
     const nomeSelecionado = this.options[this.selectedIndex].text;
-    document.getElementById("deckBtn2").innerText = `Ver sugestão de Deck de ${nomeSelecionado}`;
+    document.getElementById("deckBtn2").innerText = `Ver sugestão para Deck de ${nomeSelecionado}`;
   });
 </script>
 </body>
