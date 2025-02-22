@@ -865,7 +865,7 @@
         if (hp1 < 0) hp1 = 0;
         if (hp1 < oldHp && hp1 !== 0) playDamageSound();
         if (hp1 === 0) {
-          alert("Jogador 2 venceu a batalha!");
+          alert("Jogador 1 venceu a batalha!");
           playDamageSound0();
         }
         updateHealthBar(document.getElementById("hp1"), hp1);
@@ -875,7 +875,7 @@
         if (hp2 < 0) hp2 = 0;
         if (hp2 < oldHp && hp2 !== 0) playDamageSound();
         if (hp2 === 0) {
-          alert("Jogador 1 venceu a batalha!");
+          alert("Jogador 2 venceu a batalha!");
           playDamageSound0();
         }
         updateHealthBar(document.getElementById("hp2"), hp2, true);
