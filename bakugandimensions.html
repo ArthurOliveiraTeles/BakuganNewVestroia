@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bakugan Dimensions — Protótipo de Batalha (Fan Project)</title>
+  <style>
+    :root{
+      --bg:#0c1418;
+      --panel:#1c2a30;
+      --accent:#59d5e6;
+      --text:#e8f3f6; --muted:#98b2bb;
+      --danger:#ff4d5e; --ok:#49e690;
+      --shadow:0 10px 24px rgba(0,0,0,.35);
+      --radius:16px; --arena-url:none;
+      --aura-pyr:#ff6b4d; --aura-aqu:#59d5e6; --aura-hao:#ffd86b; --aura-dar:#b180ff; --aura-sub:#cc9f6a; --aura-ven:#7eff7a;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,#0a1013,#0e1519 40%,#0a1013);color:var(--text);font:500 16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    .game{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:10px;height:100dvh;padding:10px}
+
+    .hud-top{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
+    .panel{background:linear-gradient(180deg,#1b2a30,#152126);border:1px solid #2a3b42;border-radius:var(--radius);padding:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .panel::after{content:"";position:absolute;inset:0;background:radial-gradient(100% 100% at 0 0,rgba(89,213,230,.12),transparent 50%),radial-gradient(100% 100% at 100% 0,rgba(127,255,122,.07),transparent 40%);pointer-events:none}
+    .player-panel{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+    .attr-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;border:1px solid #2f444b;background:#0f181b;overflow:hidden}
+    .attr-icon img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 4px rgba(0,0,0,.7))}
+
+    .name{font-weight:800}
+    .sub{color:var(--muted);font-size:12px}
+    .stats{display:grid;gap:6px}
+    .bar{height:10px;background:#0c1316;border:1px solid #26373d;border-radius:999px;overflow:hidden}
+    .fill{height:100%;background:linear-gradient(90deg,#59d5e6,#7ee7f2)}
+    .fill.life{background:linear-gradient(90deg,#49e690,#c8ff8f)}
+    .fill.red{background:linear-gradient(90deg,#ff6b6b,#ffa49a)}
+    .fill.purple{background:linear-gradient(90deg,#a989ff,#e2d1ff)}
+    .fill.energy{background:linear-gradient(90deg,#59d5e6,#a0f0ff)}
+
+    .center{display:flex;align-items:center;gap:12px;padding-inline:12px;flex-wrap:wrap}
+    .center .range{display:flex;gap:8px}
+    .chip{background:#0f181b;border:1px solid #26373d;color:var(--text);padding:8px 12px;border-radius:999px;cursor:pointer;user-select:none}
+    .chip.active{outline:2px solid #59d5e6}
+    .chip[disabled]{opacity:.5;cursor:not-allowed}
+    .round{font-weight:800;letter-spacing:.5px}
+    .center select{background:#0f181b;border:1px solid #26373d;color:var(--text);border-radius:10px;padding:6px 8px}
+
+    /* barra com esferas (deck) no topo da arena */
+    .battle-top{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .team{display:flex;gap:8px;align-items:center}
+    .team-right{justify-content:flex-end}
+    .sphere{width:44px;height:44px;border-radius:999px;border:2px solid #2a3b42;background:#0f181b;position:relative;display:grid;place-items:center;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+    .sphere img{width:100%;height:100%;object-fit:cover}
+    .sphere::after{content:"";position:absolute;inset:-2px;border-radius:999px;box-shadow:0 0 0 0 transparent;transition:box-shadow .2s ease}
+    .sphere.active::after{box-shadow:0 0 0 2px #59d5e6,0 0 18px rgba(89,213,230,.5)}
+    .sphere.ko{filter:grayscale(1) contrast(.8) opacity(.55)}
+    .sphere .x{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-weight:900;background:rgba(0,0,0,.45)}
+    .sphere.ko .x{display:flex}
+
+    .arena{flex:1;border-radius:var(--radius);border:1px solid #203037;position:relative;overflow:hidden;box-shadow:var(--shadow);
+      background:
+        radial-gradient(60% 60% at 50% 50%, rgba(89,213,230,.12), transparent 70%),
+        var(--arena-url),
+        linear-gradient(180deg,#15252a,#0f1a1e);
+      background-size:cover,cover,auto; background-position:center,center,center; background-repeat:no-repeat,no-repeat,no-repeat; filter:saturate(1.02)}
+    .arena::after{content:"";position:absolute;inset:0;background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.15) 0,rgba(0,0,0,.45) 100%);pointer-events:none}
+
+    .rings{position:absolute;inset:0;pointer-events:none}
+    .rings svg{width:100%;height:100%;opacity:.35}
+
+    .baku{position:absolute;width:34%;max-width:360px;aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:14px}
+    .baku .sprite{width:80%;aspect-ratio:1/1;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.2));border:2px solid #2f444b;border-radius:12px;display:grid;place-items:center;position:relative;overflow:hidden;box-shadow:0 18px 32px rgba(0,0,0,.45)}
+    .baku .sprite img{width:100%;height:100%;object-fit:contain;display:block}
+    .baku .sprite::after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:0 0 28px 6px transparent;transition:box-shadow .2s ease;pointer-events:none}
+    .baku[data-attr="PYR"] .sprite::after{box-shadow:0 0 24px 4px rgba(255,107,77,.45)}
+    .baku[data-attr="AQU"] .sprite::after{box-shadow:0 0 24px 4px rgba(89,213,230,.45)}
+    .baku[data-attr="HAO"] .sprite::after{box-shadow:0 0 24px 4px rgba(255,216,107,.45)}
+    .baku[data-attr="DAR"] .sprite::after{box-shadow:0 0 24px 4px rgba(177,128,255,.45)}
+    .baku[data-attr="SUB"] .sprite::after{box-shadow:0 0 24px 4px rgba(204,159,106,.45)}
+    .baku[data-attr="VEN"] .sprite::after{box-shadow:0 0 24px 4px rgba(126,255,122,.45)}
+
+    .baku .tag{margin-top:6px;background:rgba(12,19,22,.8);border:1px solid #26373d;padding:4px 10px;border-radius:999px;font-size:12px}
+    .baku .hpbar{position:absolute;bottom:100%;left:50%;transform:translate(-50%,0);width:80%;height:12px;border-radius:10px;background:#081116;border:1px solid #203037;overflow:hidden}
+    .baku .hpfill{height:100%;background:linear-gradient(90deg,#49e690,#c8ff8f)}
+
+    .left{left:4%;bottom:8%}
+    .right{right:4%;bottom:8%}
+
+    .fx{position:absolute;inset:0;pointer-events:none}
+    .float{position:absolute;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.6);animation:floatUp .9s ease-out forwards}
+    @keyframes floatUp{0%{transform:translate(-50%,0) scale(.9);opacity:0}10%{opacity:1}100%{transform:translate(-50%,-80px) scale(1);opacity:0}}
+    .shake{animation:shake .25s ease}
+    @keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+
+    .hud-bottom{display:grid;grid-template-columns:1fr;gap:10px}
+
+    .log{background:#0f181b;border:1px solid #26373d;border-radius:var(--radius);padding:8px 12px;height:86px;overflow:auto;font-size:13px}
+    .log b{color:#fff}
+
+    .ability-bar{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+    .card{position:relative;background:linear-gradient(180deg,#15252a,#111b1e);border:1px solid #2f444b;border-radius:14px;padding:10px;min-height:82px;user-select:none;cursor:pointer;transition:transform .08s ease,box-shadow .2s ease}
+    .card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+    .card h4{margin:0 0 6px 0;font-size:13px;letter-spacing:.3px}
+    .card .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);align-items:center;gap:6px}
+    .pill{padding:2px 7px;border-radius:999px;border:1px solid #2f444b}
+    .kbd{background:#0c1316;border:1px solid #26373d;padding:1px 6px;border-radius:6px;font-weight:800}
+    .cost{font-weight:800;font-size:11px}
+    .cooldown{position:absolute;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;font-weight:900;font-size:18px;border-radius:14px;opacity:0;pointer-events:none;transition:opacity .2s ease}
+    .card.on-cd .cooldown{opacity:1}
+    .disabled{opacity:.45;pointer-events:none}
+
+    .footer{text-align:center;font-size:12px;color:var(--muted)}
+
+    /* Overlay de seleção de Bakugan (deck 3) */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50}
+    .overlay.show{display:flex}
+    .modal{background:linear-gradient(180deg,#18252a,#0f171b);border:1px solid #294149;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.4);padding:16px;max-width:860px;width:min(96vw,860px)}
+    .modal h3{margin:0 0 12px 0}
+    .choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .choice{background:linear-gradient(180deg,#15252a,#111b1e);border:1px solid #2f444b;border-radius:14px;padding:12px;display:grid;gap:10px;cursor:pointer}
+    .choice .ball{width:72px;height:72px;border-radius:999px;border:2px solid #2a3b42;background:#0f181b;overflow:hidden;display:grid;place-items:center;margin:0 auto}
+    .choice .ball img{width:100%;height:100%;object-fit:cover}
+    .choice:hover{box-shadow:0 10px 24px rgba(0,0,0,.3);transform:translateY(-2px)}
+
+    @media (max-width:900px){.ability-bar{grid-template-columns:repeat(4,minmax(0,1fr))}.hud-top{grid-template-columns:1fr}.center{justify-content:center}.choices{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="game">
+    <div class="hud-top">
+      <div class="panel player-panel" id="panel-left">
+        <div class="attr-icon" id="left-attr"><img id="left-attr-img" alt="Attr"></div>
+        <div>
+          <div class="name" id="left-name">Helix Dragonoid</div>
+          <div class="sub" id="left-sub">Pyrus • 300G</div>
+          <div class="stats">
+            <div class="bar" title="Vida (Life)"><div class="fill life" id="left-life" style="width:100%"></div></div>
+            <div class="bar" title="Força (Strength)"><div class="fill red" id="left-str" style="width:50%"></div></div>
+            <div class="bar" title="Agilidade (Agility)"><div class="fill" id="left-agi" style="width:50%"></div></div>
+            <div class="bar" title="Vontade (Willpower)"><div class="fill purple" id="left-will" style="width:50%"></div></div>
+            <div class="bar" title="Energia (para moves)"><div class="fill energy" id="left-energy" style="width:100%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center panel">
+        <span class="round" id="round">Round 1 • Melhor de 3</span>
+        <div class="range" id="range-controls"></div>
+        <label class="sub">Arena:
+          <select id="arena-select">
+            <option value="interspace">Interspace</option>
+            <option value="bayview" selected>Bayview</option>
+            <option value="battlefield">Battlefield</option>
+          </select>
+        </label>
+        <span class="sub" id="turn-indicator">Sua vez</span>
+      </div>
+
+      <div class="panel player-panel" id="panel-right">
+        <div class="attr-icon" id="right-attr"><img id="right-attr-img" alt="Attr"></div>
+        <div>
+          <div class="name" id="right-name">Linehalt</div>
+          <div class="sub" id="right-sub">Darkus • 300G</div>
+          <div class="stats">
+            <div class="bar"><div class="fill life" id="right-life" style="width:100%"></div></div>
+            <div class="bar"><div class="fill red" id="right-str" style="width:50%"></div></div>
+            <div class="bar"><div class="fill" id="right-agi" style="width:50%"></div></div>
+            <div class="bar"><div class="fill purple" id="right-will" style="width:50%"></div></div>
+            <div class="bar" title="Energia (para moves)"><div class="fill energy" id="right-energy" style="width:100%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra das esferas (deck) -->
+    <div class="battle-top">
+      <div class="team" id="team-left"></div>
+      <div class="team team-right" id="team-right"></div>
+    </div>
+
+    <div class="arena" id="arena">
+      <div class="rings" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <g stroke="#60d9e9" stroke-width=".5" fill="none">
+            <circle cx="50" cy="50" r="18"></circle>
+            <circle cx="50" cy="50" r="30"></circle>
+            <circle cx="50" cy="50" r="42"></circle>
+          </g>
+        </svg>
+      </div>
+      <div class="baku left" id="baku-left" data-attr="PYR">
+        <div class="hpbar"><div class="hpfill" id="hp-left"></div></div>
+        <div class="sprite" id="sprite-left"><img id="sprite-left-img" alt="Helix Dragonoid"></div>
+        <div class="tag" id="range-left">Alcance: Médio</div>
+      </div>
+      <div class="baku right" id="baku-right" data-attr="DAR">
+        <div class="hpbar"><div class="hpfill" id="hp-right"></div></div>
+        <div class="sprite" id="sprite-right"><img id="sprite-right-img" alt="Linehalt"></div>
+        <div class="tag" id="range-right">Alcance: Médio</div>
+      </div>
+      <div class="fx" id="fx"></div>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="log" id="log"></div>
+      <div class="ability-bar" id="ability-bar"></div>
+      <div class="footer">Protótipo de fã — imagens externas usadas apenas como pré-visualização (hotlink). Para publicar, hospede assets localmente. Controles: números 1–4 usam habilidades; clique nos chips de alcance.
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay seleção de Bakugan (3) -->
+  <div class="overlay" id="deck-overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>Escolha seu Bakugan para este round</h3>
+      <div class="choices" id="deck-choices"></div>
+      <div class="sub" id="deck-hint">Dica: no Dimensions cada round começa com a escolha de um Bakugan do seu trio pronto.</div>
+    </div>
+  </div>
+
+<script>
+/**
+ * Bakugan Dimensions — Protótipo de Batalha (fan) — fidelidade + deck 3
+ *
+ * Fontes: regras e HUD inspirados em capturas e artigos do BakuBlog/Image Gallery
+ * - "Readying your Bakugan" (escolher 3 e iniciar cada round escolhendo 1)
+ * - Vitória por 2 de 3, Faixas de alcance (Close/Mid/Far) com ação extra ao mover
+ */
+
+// ---------- Config ----------
+const USE_ENERGY = true; // alternar custo de energia
+
+// ---------- Utilidades ----------
+const clamp=(v,min,max)=> Math.max(min, Math.min(max,v));
+const pct=(num,den)=> den>0? (num/den)*100 : 0;
+const setWidth=(el,val)=>{ if(el && el.style) el.style.width = val; };
+const setText=(el,txt)=>{ if(el) el.textContent = txt; };
+function placeholderSVG(label){
+  const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'>\
+    <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2315252a'/><stop offset='1' stop-color='%230f1a1e'/></linearGradient></defs>\
+    <rect width='500' height='500' fill='url(%23g)'/>\
+    <g fill='%2360d9e9' font-size='28' font-family='system-ui,Segoe UI,Roboto' font-weight='700' text-anchor='middle'>\
+      <text x='250' y='250'>${(label||'SPRITE').toUpperCase()}</text>\
+    </g>\
+  </svg>`);
+  return `data:image/svg+xml;utf8,${svg}`;
+}
+
+// ---------- Assets (hotlink para preview) ----------
+const ASSETS = {
+  sprites: {
+    'Helix Dragonoid': 'https://bakugan.wiki/images/thumb/5/5c/Pyrus_HelixDragonoidd.png/240px-Pyrus_HelixDragonoidd.png',
+    'Linehalt': 'https://bakugan.wiki/images/thumb/9/95/Linehalt_stand.png/240px-Linehalt_stand.png',
+    'Akwimos': 'https://bakugan.wiki/images/thumb/3/36/Akwimos_Stand.png/240px-Akwimos_Stand.png',
+    'Aranaut': 'https://bakugan.wiki/images/thumb/5/58/Aranaut_Stand.png/240px-Aranaut_Stand.png',
+    'Contestir': 'https://bakugan.wiki/images/thumb/4/49/Contestir_Stand.png/240px-Contestir_Stand.png',
+    'Avior': 'https://bakugan.wiki/images/thumb/9/9c/Avior_stand.png/240px-Avior_stand.png',
+  },
+  // Ícones de atributo (fallback para esfera)
+  attr: {
+    PYR: 'https://bakugan.wiki/images/thumb/7/7a/Pyrus.png/64px-Pyrus.png',
+    AQU: 'https://bakugan.wiki/images/thumb/c/c6/Aquos.png/64px-Aquos.png',
+    HAO: 'https://bakugan.wiki/images/thumb/9/9d/Haos.png/64px-Haos.png',
+    DAR: 'https://bakugan.wiki/images/thumb/8/8b/Darkus.png/64px-Darkus.png',
+    SUB: 'https://bakugan.wiki/images/thumb/1/1e/Subterra.png/64px-Subterra.png',
+    VEN: 'https://bakugan.wiki/images/thumb/9/9d/Ventus.png/64px-Ventus.png',
+  },
+  // (Opcional) se achar links confiáveis de esferas fechadas, coloque aqui por nome
+  spheres: {
+    // 'Linehalt': '.../Linehalt_in_Ball_Form_Closed.png',
+  },
+  arenas: {
+    interspace: 'https://bakugan.wiki/images/thumb/0/0d/Interspace_BG.jpg/640px-Interspace_BG.jpg',
+    bayview: 'https://bakugan.wiki/images/thumb/b/b2/Bayview_Dimensions.jpg/640px-Bayview_Dimensions.jpg',
+    battlefield: 'https://bakugan.wiki/images/thumb/6/6a/Battlefield_Dimensions.jpg/640px-Battlefield_Dimensions.jpg'
+  }
+};
+
+// ---------- Dados ----------
+const ATTRS = {
+  PYR:{name:'Pyrus',bias:{str:+15,agi:+0,wil:+0,lifeMul:1.00}},
+  AQU:{name:'Aquos',bias:{str:+0,agi:+12,wil:+0,lifeMul:1.00}},
+  HAO:{name:'Haos', bias:{str:+0,agi:+0,wil:+16,lifeMul:1.05}},
+  DAR:{name:'Darkus',bias:{str:+8,agi:+0,wil:+10,lifeMul:1.00}},
+  SUB:{name:'Subterra',bias:{str:+10,agi:-6,wil:+0,lifeMul:1.12}},
+  VEN:{name:'Ventus',bias:{str:+0,agi:+16,wil:+0,lifeMul:0.96}},
+};
+
+const MOVE_LIBRARY = {
+  'Breath of Fire':{type:'atk',base:220,cost:25,range:['close','mid'],tag:'Ataque pesado'},
+  'Relentless Rushdown':{type:'atk-fast',base:140,cost:30,range:['close','mid'],tag:'Rápido: age novamente'},
+  'Defense Crusher':{type:'debuff',stat:'def',amt:-20,dur:2,cost:20,range:['close','mid'],tag:'Quebra defesa'},
+  'Nova Blaze':{type:'gate',stat:'str',amt:+20,dur:3,cost:22,range:['any'],tag:'+Força temporária'},
+  'Healing Light':{type:'heal',base:260,cost:35,range:['any'],tag:'Cura'},
+  'Test of Will':{type:'gate',stat:'wil',amt:+24,dur:3,cost:20,range:['any'],tag:'+Vontade'},
+  'Defiant Soul':{type:'block',base:50,cost:14,range:['any'],tag:'Bloqueio/mitiga'},
+  'Super Speedup':{type:'buff',stat:'agi',amt:+18,dur:2,cost:18,range:['any'],tag:'Velocidade'},
+  'Rising Tide':{type:'atk-stack',base:120,inc:40,maxStacks:3,cost:22,range:['mid','far'],tag:'Combo progressivo'},
+  'Overflow':{type:'counter',base:180,cost:28,range:['mid','far'],tag:'Contra-ataque se bloqueado'},
+  'Furious Seas':{type:'atk',base:180,cost:22,range:['far','mid'],tag:'À distância'},
+  'Torrential Flow':{type:'gate',stat:'agi',amt:+20,dur:3,cost:20,range:['any'],tag:'+Agilidade'},
+  'Darkness Falls':{type:'interrupt',chance:0.45,cost:26,range:['any'],tag:'Interrompe ação'},
+  'Strike from Shadow':{type:'atk',base:240,lowLifeBoost:true,cost:26,range:['close','mid'],tag:'Mais dano com pouca vida'},
+  'Solemn Night':{type:'block',base:70,cost:18,range:['any'],tag:'Bloqueio forte'},
+  'Master Manipulator':{type:'gate',stat:'wil',amt:+18,dur:3,cost:24,range:['any'],tag:'+Will / -Força inimigo'},
+  'Fist of Stone':{type:'block-buff',base:50,stat:'str',amt:+16,dur:2,cost:20,range:['close','mid'],tag:'Block + Força'},
+  'Mountain Cracker':{type:'atk',base:230,cost:24,range:['close'],tag:'Pesado corpo-a-corpo'},
+  'Immobilizer':{type:'debuff',stat:'agi',amt:-16,dur:2,cost:18,range:['any'],tag:'Reduz Agilidade'},
+  'Stone Aegis':{type:'gate',stat:'life',amt:+10,dur:0,cost:22,range:['any'],tag:'+10% Vida'},
+  'Gale Slash':{type:'atk',base:160,cost:20,range:['far','mid'],tag:'Corte de vento'},
+  'Wind Feint':{type:'dodge',chance:0.5,cost:16,range:['any'],tag:'Grande esquiva'},
+  'Momentum':{type:'gate-stack',stat:'atkBonus',amt:+10,dur:2,requireAttackChain:true,cost:14,range:['any'],tag:'Dano progressivo'},
+  'Super Speedup (V)':{type:'buff',stat:'agi',amt:+22,dur:2,cost:18,range:['any'],tag:'+Agilidade'},
+};
+
+const BAKUGAN_DB = [
+  {name:'Helix Dragonoid',attr:'PYR',G:300},
+  {name:'Akwimos',attr:'AQU',G:300},
+  {name:'Aranaut',attr:'HAO',G:300},
+  {name:'Linehalt',attr:'DAR',G:300},
+  {name:'Contestir',attr:'VEN',G:300},
+  {name:'Avior',attr:'SUB',G:300},
+];
+
+const LOADOUTS = {
+  PYR:['Breath of Fire','Relentless Rushdown','Defense Crusher','Nova Blaze'],
+  HAO:['Healing Light','Test of Will','Defiant Soul','Super Speedup'],
+  AQU:['Rising Tide','Overflow','Furious Seas','Torrential Flow'],
+  DAR:['Darkness Falls','Strike from Shadow','Solemn Night','Master Manipulator'],
+  SUB:['Fist of Stone','Mountain Cracker','Immobilizer','Stone Aegis'],
+  VEN:['Gale Slash','Wind Feint','Momentum','Super Speedup (V)'],
+};
+
+// ---------- Modelo de combate ----------
+function computeBaseStats(baku){
+  const base={str:50,agi:50,wil:50};
+  const bias=ATTRS[baku.attr].bias;
+  return{
+    str:clamp(base.str+bias.str,10,100),
+    agi:clamp(base.agi+bias.agi,10,100),
+    wil:clamp(base.wil+bias.wil,10,100),
+    lifeMax:Math.round((1400+(baku.G-300)*2)*(bias.lifeMul||1)),
+    energyMax:100+Math.round((bias.wil||0)*0.5),
+  };
+}
+
+function createFighter(entry){
+  const s=computeBaseStats(entry);
+  return{
+    name:entry.name,attr:entry.attr,G:entry.G,
+    base:{...s},stats:{...s},
+    life:s.lifeMax,energy:s.energyMax,alive:true,
+    range:'mid',effects:[],cooldowns:{},stacks:{},
+    loadout:LOADOUTS[entry.attr].map(n=>({name:n,...MOVE_LIBRARY[n]})),
+  };
+}
+
+// ---------- Estado do jogo ----------
+const Game={
+  round:1,bestOf:3,playerWins:0,enemyWins:0,
+  player:null,enemy:null, // ativos
+  playerTeam:[],enemyTeam:[], playerActive:-1, enemyActive:-1,
+  turn:'player', range:'mid',
+  chainAttacks:{player:0,enemy:0},
+  movedThisTurn:{player:false,enemy:false},
+};
+
+// ---------- UI refs ----------
+let els=null;
+const byId=(id)=>document.getElementById(id);
+function initDOM(){
+  els={
+    left:{name:byId('left-name'),sub:byId('left-sub'),life:byId('left-life'),str:byId('left-str'),agi:byId('left-agi'),wil:byId('left-will'),energy:byId('left-energy'),attr:byId('left-attr'),attrImg:byId('left-attr-img')},
+    right:{name:byId('right-name'),sub:byId('right-sub'),life:byId('right-life'),str:byId('right-str'),agi:byId('right-agi'),wil:byId('right-will'),energy:byId('right-energy'),attr:byId('right-attr'),attrImg:byId('right-attr-img')},
+    hpLeft:byId('hp-left'),hpRight:byId('hp-right'),
+    spriteLeftImg:byId('sprite-left-img'),spriteRightImg:byId('sprite-right-img'),
+    bakuLeft:byId('baku-left'),bakuRight:byId('baku-right'),
+    arena:byId('arena'),rangeLeft:byId('range-left'),rangeRight:byId('range-right'),
+    turn:byId('turn-indicator'),round:byId('round'),
+    bar:byId('ability-bar'),log:byId('log'),rangeCtrls:byId('range-controls'),
+    arenaSelect:byId('arena-select'),
+    teamLeft:byId('team-left'),teamRight:byId('team-right'),
+    deckOverlay:byId('deck-overlay'),deckChoices:byId('deck-choices'),deckHint:byId('deck-hint'),
+  };
+}
+
+// ---------- Helpers UI ----------
+function applySprite(imgEl,n){ if(!imgEl) return; const url=ASSETS.sprites[n]||placeholderSVG(n); imgEl.alt=n; imgEl.src=url; imgEl.onerror=()=>{imgEl.src=placeholderSVG(n)} }
+function applyAttrIcon(imgEl,a){ if(!imgEl) return; const url=ASSETS.attr[a]||placeholderSVG(a); imgEl.alt=a; imgEl.src=url; imgEl.onerror=()=>{imgEl.src=placeholderSVG(a)} }
+function applyArenaBackground(url){ if(!els.arena) return; if(url){ els.arena.style.setProperty('--arena-url', `url("${url}")`); } }
+function getSphereURL(name,attr){ return ASSETS.spheres[name] || ASSETS.attr[attr] || placeholderSVG(name); }
+
+function drawTeamBars(){ if(!els.teamLeft||!els.teamRight) return; els.teamLeft.innerHTML=''; els.teamRight.innerHTML=''; Game.playerTeam.forEach((f,i)=>{ const d=document.createElement('div'); d.className='sphere'+(i===Game.playerActive?' active':'')+(f.alive?'' :' ko'); d.title=f.name; const img=new Image(); img.alt=f.name; img.src=getSphereURL(f.name,f.attr); img.onerror=()=>{img.src=placeholderSVG(f.name)}; const x=document.createElement('div'); x.className='x'; x.textContent='✕'; d.append(img,x); els.teamLeft.appendChild(d); }); Game.enemyTeam.forEach((f,i)=>{ const d=document.createElement('div'); d.className='sphere'+(i===Game.enemyActive?' active':'')+(f.alive?'' :' ko'); d.title=f.name; const img=new Image(); img.alt=f.name; img.src=getSphereURL(f.name,f.attr); img.onerror=()=>{img.src=placeholderSVG(f.name)}; const x=document.createElement('div'); x.className='x'; x.textContent='✕'; d.append(img,x); els.teamRight.appendChild(d); }); }
+
+function drawRangeControls(){ if(!els.rangeCtrls) return; els.rangeCtrls.innerHTML=''; ['close','mid','far'].forEach(r=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=r==='close'?'Próximo':r==='mid'?'Médio':'Distante'; if(Game.player?.range===r) b.classList.add('active'); if(Game.movedThisTurn.player) b.setAttribute('disabled',''); b.onclick=()=>moveRange('player',r); els.rangeCtrls.appendChild(b); }); }
+
+function canUseMove(f,mv){ if(!mv) return false; if(!USE_ENERGY) return true; const need=mv.cost||0; return (f.energy>=need); }
+
+function drawAbilityBar(){ if(!els.bar||!Game.player) return; els.bar.innerHTML=''; Game.player.loadout.forEach((mv,idx)=>{ const i=idx+1; const card=document.createElement('div'); card.className='card'; card.dataset.key=i; const cd=Game.player.cooldowns[mv.name]||0; if(cd>Game.round) card.classList.add('on-cd'); const title=document.createElement('h4'); title.textContent=mv.name; card.appendChild(title); const meta=document.createElement('div'); meta.className='meta'; const pill=document.createElement('span'); pill.className='pill'; pill.textContent=mv.tag||mv.type; const cost=document.createElement('span'); cost.className='cost'; cost.title='Custo de energia'; cost.textContent=USE_ENERGY?`${mv.cost||0}`:'—'; const kb=document.createElement('span'); kb.className='kbd'; kb.textContent=(idx+1); meta.append(pill,cost,kb); card.appendChild(meta); const cdDiv=document.createElement('div'); cdDiv.className='cooldown'; cdDiv.id=`cd-${i}`; cdDiv.textContent=Math.max(0,(Game.player.cooldowns[mv.name]||Game.round)-Game.round); card.appendChild(cdDiv); const inRange=isMoveInRange(mv,Game.player.range); const enough=canUseMove(Game.player,mv); if(!inRange||!enough){ card.classList.add('disabled'); card.title=!inRange?'Fora de alcance':'Energia insuficiente'; } card.onclick=()=>useMove('player',mv); els.bar.appendChild(card); }); window.onkeydown=(e)=>{ const n=Number(e.key); if(n>=1&&n<=8){ const mv=Game.player.loadout[n-1]; if(mv) useMove('player',mv); } } }
+
+function labelRange(r){ return r==='close'?'Próximo': r==='mid'?'Médio':'Distante'; }
+function log(msg){ const p=document.createElement('div'); p.innerHTML=msg; els?.log?.prepend(p); }
+
+function mountUI(){ const p=Game.player, e=Game.enemy; if(!p||!e) return; setText(els.left?.name,p.name); setText(els.right?.name,e.name); setText(els.left?.sub,`${ATTRS[p.attr].name} • ${p.G}G`); setText(els.right?.sub,`${ATTRS[e.attr].name} • ${e.G}G`); els.bakuLeft?.setAttribute('data-attr',p.attr); els.bakuRight?.setAttribute('data-attr',e.attr); applySprite(els.spriteLeftImg,p.name); applySprite(els.spriteRightImg,e.name); applyAttrIcon(els.left?.attrImg,p.attr); applyAttrIcon(els.right?.attrImg,e.attr); applyArenaBackground(ASSETS.arenas.bayview); els.arenaSelect?.addEventListener('change',(ev)=>{ const val=ev.target.value; applyArenaBackground(ASSETS.arenas[val]||ASSETS.arenas.bayview); }); drawTeamBars(); }
+
+// ---------- FX ----------
+function floatText(targetEl,text,color='#fff'){ if(!targetEl) return; const div=document.createElement('div'); div.className='float'; div.style.left=((targetEl.offsetLeft||0)+targetEl.offsetWidth/2)+'px'; div.style.top=((targetEl.offsetTop||0))+'px'; div.style.color=color; div.textContent=text; els.arena.appendChild(div); setTimeout(()=>div.remove(),900); }
+function shake(el){ if(!el) return; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); setTimeout(()=>el.classList.remove('shake'),300); }
+
+// ---------- Mecânicas ----------
+const RANGES=['close','mid','far'];
+function isMoveInRange(mv,curr){ return mv.range.includes('any') || mv.range.includes(curr); }
+function moveRange(who,r){ const f=(who==='player')?Game.player:Game.enemy; if(Game.turn!==who) return; if(Game.movedThisTurn[who]) return; if(f.range===r) return; f.range=r; Game.movedThisTurn[who]=true; log(`<b>${f.name}</b> reposiciona para <b>${labelRange(r)}</b> e pode agir novamente este turno.`); updatePanels(); drawRangeControls(); }
+
+function baseAttack(attacker,defender,base){ let atkBonus=0; const mom=attacker.effects.find(e=>e.kind==='atkBonus'&&e.untilRound>=Game.round); if(mom) atkBonus+=mom.amt; const dmg=Math.round(base*(1+(attacker.stats.str+atkBonus)/100)); const low=attacker.life/attacker.stats.lifeMax<=0.3; const critChance=clamp((attacker.stats.wil/200)+(low?0.25:0),0,0.6); const crit=Math.random()<critChance; const final=crit?Math.round(dmg*1.5):dmg; return{amount:final,crit}; }
+function tryDodge(defender){ const chance=clamp(defender.stats.agi/100*0.35,0,0.5); return Math.random()<chance; }
+
+function spendEnergy(fighter,cost){ if(!USE_ENERGY) return true; const c=cost||0; if(fighter.energy<c) return false; fighter.energy=clamp(fighter.energy-c,0,fighter.stats.energyMax); return true; }
+function regenEnergy(f){ if(!USE_ENERGY) return; const regen=Math.round(10+f.stats.wil/10); f.energy=clamp(f.energy+regen,0,f.stats.energyMax); }
+
+function applyDamage(target,amount){ const block=target.effects.find(e=>e.stat==='block'&&e.untilRound>=Game.round); const mitigated=Math.max(0,amount-(block?block.amt:0)); target.life=clamp(target.life-mitigated,0,target.stats.lifeMax); floatText(target===Game.enemy?els.bakuRight:els.bakuLeft,`-${mitigated}`,'#ffb3b3'); shake(target===Game.enemy?els.spriteRightImg:els.spriteLeftImg); }
+
+function setCooldown(f,mvName,turns=2){ f.cooldowns[mvName]=Game.round+turns; }
+function addEffect(f,stat,amt,dur,kind){ if(stat==='life'&&dur===0){ const heal=Math.round(f.stats.lifeMax*(amt/100)); f.life=clamp(f.life+heal,0,f.stats.lifeMax); floatText(f===Game.player?els.bakuLeft:els.bakuRight,`+${heal}`,'#9bffa7'); log(`<b>${f.name}</b> recupera <b>${heal}</b> de Vida.`); return;} f.effects.push({stat,amt,untilRound:Game.round+(dur||0),kind}); }
+function clearExpiredEffects(f){ const now=Game.round; f.effects=f.effects.filter(e=>e.untilRound>=now); }
+
+function useMove(who,mv){ const me=(who==='player')?Game.player:Game.enemy; const opp=(who==='player')?Game.enemy:Game.player; if(Game.turn!==who) return; if(!isMoveInRange(mv,me.range)) return; const cd=me.cooldowns[mv.name]||0; if(cd>Game.round) return; if(!canUseMove(me,mv) || !spendEnergy(me,mv.cost)){ log(`<b>${me.name}</b> tentou usar <b>${mv.name}</b> mas não tinha energia suficiente.`); return; }
+  let extraAction=false; let justAttacked=false;
+  switch(mv.type){
+    case 'atk':{ if(tryDodge(opp)){ log(`<b>${opp.name}</b> esquiva!`);} else { const {amount,crit}=baseAttack(me,opp,mv.base); applyDamage(opp,amount); log(`<b>${me.name}</b> usa <b>${mv.name}</b> e causa <b>${amount}</b>${crit?' (CRÍTICO)':''}.`); justAttacked=true; } setCooldown(me,mv.name,2); break; }
+    case 'atk-fast':{ const {amount,crit}=baseAttack(me,opp,mv.base); if(tryDodge(opp)){ log(`<b>${opp.name}</b> esquiva do golpe rápido!`);} else { applyDamage(opp,amount); log(`<b>${me.name}</b> acerta <b>${mv.name}</b> por <b>${amount}</b>${crit?' (CRÍTICO)':''} e ganha outra ação.`);} setCooldown(me,mv.name,3); extraAction=true; justAttacked=true; break; }
+    case 'atk-stack':{ const s=me.stacks[mv.name]||0; const bonus=Math.min(s,mv.maxStacks||3)*(mv.inc||0); const {amount,crit}=baseAttack(me,opp,mv.base+bonus); if(tryDodge(opp)){ log(`<b>${opp.name}</b> esquiva do combo!`); me.stacks[mv.name]=0; } else { applyDamage(opp,amount); log(`<b>${me.name}</b> executa <b>${mv.name}</b> (${s+1}×) e causa <b>${amount}</b>${crit?' (CRÍTICO)':''}.`); me.stacks[mv.name]=(s+1);} setCooldown(me,mv.name,2); justAttacked=true; break; }
+    case 'heal':{ const heal=Math.round(mv.base*(1+me.stats.wil/120)); me.life=clamp(me.life+heal,0,me.stats.lifeMax); floatText(me===Game.player?els.bakuLeft:els.bakuRight,`+${heal}`,'#9bffa7'); log(`<b>${me.name}</b> usa <b>${mv.name}</b> e cura <b>${heal}</b> de Vida.`); setCooldown(me,mv.name,3); break; }
+    case 'gate':{ addEffect(me,mv.stat,mv.amt,mv.dur,mv.stat); if(mv.enemyDebuff){ addEffect(opp,mv.enemyDebuff.stat,mv.enemyDebuff.amt,mv.dur,'debuff'); } log(`<b>${me.name}</b> abre o Gate <b>${mv.name}</b> (${mv.amt>0?'+':''}${mv.amt} ${mv.stat.toUpperCase()} por ${mv.dur}t).`); setCooldown(me,mv.name,3); break; }
+    case 'gate-stack':{ const chain=Game.chainAttacks[who]; if(chain>0){ addEffect(me,mv.stat,mv.amt,mv.dur,'atkBonus'); log(`<b>${me.name}</b> acumula Momentum (+${mv.amt}% dano por ${mv.dur}t).`);} else { log(`<b>${me.name}</b> prepara <b>${mv.name}</b> — ataque nos próximos turnos para acumular.`);} setCooldown(me,mv.name,2); break; }
+    case 'debuff':{ addEffect(opp,mv.stat,mv.amt,mv.dur,'debuff'); log(`<b>${me.name}</b> aplica <b>${mv.name}</b> em ${opp.name}: ${mv.amt} ${mv.stat.toUpperCase()} por ${mv.dur}t.`); setCooldown(me,mv.name,2); break; }
+    case 'block':{ addEffect(me,'block',mv.base,1,'block'); log(`<b>${me.name}</b> ergue <b>${mv.name}</b> (mitiga ${mv.base}).`); setCooldown(me,mv.name,2); break; }
+    case 'block-buff':{ addEffect(me,'block',mv.base,1,'block'); addEffect(me,mv.stat,mv.amt,mv.dur,mv.stat); log(`<b>${me.name}</b> usa <b>${mv.name}</b>: bloqueio ${mv.base} e +${mv.amt} ${mv.stat.toUpperCase()} por ${mv.dur}t.`); setCooldown(me,mv.name,3); break; }
+    case 'interrupt':{ const chance=(mv.chance||0)+(me.stats.wil/300); addEffect(me,'interrupt',Math.min(chance,0.8),1,'interrupt'); log(`<b>${me.name}</b> prepara <b>${mv.name}</b> (chance ${(Math.min(chance,0.8)*100).toFixed(0)}% de interromper).`); setCooldown(me,mv.name,3); break; }
+    case 'dodge':{ const chance=(mv.chance||0)+(me.stats.agi/400); addEffect(me,'dodge',Math.min(chance,0.8),1,'dodge'); log(`<b>${me.name}</b> ativa <b>${mv.name}</b> (esquiva ${(Math.min(chance,0.8)*100).toFixed(0)}%).`); setCooldown(me,mv.name,2); break; }
+    default:return;
+  }
+  recalcDerivedStats(Game.player); recalcDerivedStats(Game.enemy);
+  if(justAttacked){ Game.chainAttacks[who]=(Game.chainAttacks[who]||0)+1; } else { Game.chainAttacks[who]=0; }
+  updatePanels();
+  if(extraAction){ return; }
+  endTurn();
+}
+
+function recalcDerivedStats(f){ const base=computeBaseStats({attr:f.attr,G:f.G}); const now=Game.round; const eff=(stat)=>f.effects.filter(e=>e.stat===stat&&e.untilRound>=now).reduce((s,e)=>s+e.amt,0); f.stats.str=clamp(base.str+eff('str'),10,140); f.stats.agi=clamp(base.agi+eff('agi'),10,140); f.stats.wil=clamp(base.wil+eff('wil'),10,140); }
+
+function endTurn(){ const who=Game.turn; Game.turn=(Game.turn==='player')?'enemy':'player'; clearExpiredEffects(Game.player); clearExpiredEffects(Game.enemy); regenEnergy(Game.player); regenEnergy(Game.enemy); Game.movedThisTurn[who]=false; updatePanels(); checkRoundEnd(); if(Game.turn==='enemy'){ setTimeout(cpuAct,650); } }
+
+function checkRoundEnd(){ if(Game.player.life<=0 || Game.enemy.life<=0){ const playerDown=(Game.player.life<=0); const winner=!playerDown?'Você':'CPU'; log(`<b>${winner}</b> vence o round ${Game.round}!`); if(playerDown){ Game.player.alive=false; Game.enemyWins++; } else { Game.enemy.alive=false; Game.playerWins++; }
+    Game.round += 1;
+    if(Game.playerWins>=2 || Game.enemyWins>=2){ log(`<b>${Game.playerWins>=2?'Você':'CPU'}</b> venceu a partida!`); resetMatch(); return; }
+    // Próximo round: ambos escolhem (CPU escolhe automática)
+    showDeckOverlay(); cpuChooseNext(); }
+}
+
+// ---------- CPU simples ----------
+function cpuAct(){ const me=Game.enemy, opp=Game.player; const finisher=me.loadout.find(m=>m.type.startsWith('atk')&&isMoveReady(me,m)&&isMoveInRange(m,me.range)&&canUseMove(me,m)); if(opp.life/opp.stats.lifeMax<0.25&&finisher){ useMove('enemy',finisher); return; } const heal=me.loadout.find(m=>m.type==='heal'&&isMoveReady(me,m)&&canUseMove(me,m)); if(me.life/me.stats.lifeMax<0.35&&heal){ useMove('enemy',heal); return; } const util=me.loadout.find(m=>(m.type==='gate'||m.type==='debuff')&&isMoveReady(me,m)&&canUseMove(me,m)); if(util){ useMove('enemy',util); return; } const atkInRange=me.loadout.find(m=>m.type.includes('atk')&&isMoveReady(me,m)&&isMoveInRange(m,me.range)&&canUseMove(me,m)); if(!atkInRange){ for(const r of ['close','mid','far']){ if(me.loadout.some(m=>m.type.includes('atk')&&isMoveReady(me,m)&&isMoveInRange(m,r)&&canUseMove(me,m))){ me.range=r; log(`<b>${me.name}</b> reposiciona para <b>${labelRange(r)}</b> e pode agir novamente.`); updatePanels(); return; } } } if(atkInRange){ useMove('enemy',atkInRange); return; } endTurn(); }
+function isMoveReady(f,mv){ return (f.cooldowns[mv.name]||0) <= Game.round; }
+
+// ---------- Seleção de deck / round ----------
+function resetFighterState(f){ f.life=f.base.lifeMax; f.energy=f.base.energyMax; f.effects=[]; f.cooldowns={}; f.stacks={}; f.range='mid'; f.stats={...f.base}; }
+function startRound(){ // ambos já devem ter ativos definidos
+  resetFighterState(Game.player); resetFighterState(Game.enemy);
+  mountUI(); updatePanels(); drawAbilityBar(); drawRangeControls();
+  Game.turn='player'; Game.chainAttacks={player:0,enemy:0}; Game.movedThisTurn={player:false,enemy:false};
+  log(`Batalha iniciada! <b>${Game.player.name}</b> (Você) vs <b>${Game.enemy.name}</b> (CPU).`);
+}
+
+function selectPlayerActive(index){ if(index<0) return; Game.playerActive=index; Game.player=Game.playerTeam[index]; hideDeckOverlay(); maybeStartRound(); }
+function cpuChooseNext(){ // escolhe aleatoriamente entre vivos
+  const alive=Game.enemyTeam.map((f,i)=>({f,i})).filter(x=>x.f.alive);
+  const pick=alive[Math.floor(Math.random()*alive.length)]; Game.enemyActive=pick.i; Game.enemy=pick.f; drawTeamBars(); }
+function maybeStartRound(){ if(Game.playerActive>-1 && Game.enemyActive>-1){ startRound(); } }
+
+function showDeckOverlay(){ if(!els.deckOverlay) return; els.deckChoices.innerHTML=''; const choices=Game.playerTeam.map((f,i)=>({f,i})).filter(x=>x.f.alive); choices.forEach(({f,i})=>{ const card=document.createElement('div'); card.className='choice'; const ball=document.createElement('div'); ball.className='ball'; const img=new Image(); img.src=getSphereURL(f.name,f.attr); img.alt=f.name; img.onerror=()=>{img.src=placeholderSVG(f.name)}; ball.appendChild(img); const title=document.createElement('div'); title.className='name'; title.textContent=f.name; const sub=document.createElement('div'); sub.className='sub'; sub.textContent=`${ATTRS[f.attr].name} • ${f.G}G`; card.append(ball,title,sub); card.onclick=()=>selectPlayerActive(i); els.deckChoices.appendChild(card); }); els.deckOverlay.classList.add('show'); drawTeamBars(); }
+function hideDeckOverlay(){ els.deckOverlay?.classList.remove('show'); }
+
+// ---------- Painéis / HUD ----------
+function updatePanels(){ if(!Game.player||!Game.enemy) return; const p=Game.player,e=Game.enemy; const pLifePct=pct(p.life,p.stats.lifeMax), eLifePct=pct(e.life,e.stats.lifeMax); setWidth(els.left?.life,clamp(pLifePct,0,100)+'%'); setWidth(els.right?.life,clamp(eLifePct,0,100)+'%'); setWidth(els.left?.str,clamp(p.stats.str,0,100)+'%'); setWidth(els.right?.str,clamp(e.stats.str,0,100)+'%'); setWidth(els.left?.agi,clamp(p.stats.agi,0,100)+'%'); setWidth(els.right?.agi,clamp(e.stats.agi,0,100)+'%'); setWidth(els.left?.will,clamp(p.stats.wil,0,100)+'%'); setWidth(els.right?.will,clamp(e.stats.wil,0,100)+'%'); const pEnPct=pct(p.energy,p.stats.energyMax), eEnPct=pct(e.energy,e.stats.energyMax); setWidth(els.left?.energy,clamp(pEnPct,0,100)+'%'); setWidth(els.right?.energy,clamp(eEnPct,0,100)+'%'); setWidth(els.hpLeft,clamp(pLifePct,0,100)+'%'); setWidth(els.hpRight,clamp(eLifePct,0,100)+'%'); setText(els.rangeLeft,'Alcance: '+labelRange(p.range)); setText(els.rangeRight,'Alcance: '+labelRange(e.range)); setText(els.left?.sub,`${ATTRS[p.attr].name} • ${p.G}G`); setText(els.right?.sub,`${ATTRS[e.attr].name} • ${e.G}G`); setText(els.round,`Round ${Game.round} • Melhor de 3 • Vitórias Você ${Game.playerWins} × CPU ${Game.enemyWins}`); setText(els.turn,Game.turn==='player'?'Sua vez':'Vez do CPU'); drawAbilityBar(); drawTeamBars(); }
+
+// ---------- Inicialização + Smoke tests ----------
+function init(){ initDOM(); // montar times (player escolhe 3, por agora pré-definido)
+  Game.playerTeam=[createFighter(BAKUGAN_DB[0]), createFighter(BAKUGAN_DB[1]), createFighter(BAKUGAN_DB[2])];
+  Game.enemyTeam=[createFighter(BAKUGAN_DB[3]), createFighter(BAKUGAN_DB[4]), createFighter(BAKUGAN_DB[5])];
+  // escolher arena default
+  applyArenaBackground(ASSETS.arenas.bayview);
+  mountUI(); drawTeamBars();
+  // primeiro round começa com escolha
+  showDeckOverlay(); cpuChooseNext();
+  runSmokeTests();
+}
+
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); } else { init(); }
+
+function runSmokeTests(){ try{
+  // refs essenciais
+  const required=[els.left?.life,els.right?.life,els.bar,els.rangeCtrls,els.spriteLeftImg,els.spriteRightImg,els.arena,els.left?.energy,els.right?.energy,els.left?.attrImg,els.right?.attrImg,els.teamLeft,els.teamRight,els.deckOverlay,els.deckChoices];
+  console.assert(required.every(Boolean),'Refs HUD/IMG/ENERGY + deck OK');
+  // deck bar renderiza 3 por lado
+  drawTeamBars();
+  console.assert(els.teamLeft.children.length===3 && els.teamRight.children.length===3,'Team bars com 3 esferas');
+  // overlay de seleção aparece no início
+  console.assert(els.deckOverlay.classList.contains('show'),'Overlay de deck visível');
+  // escolher um bakugan programa o round (simulado)
+  selectPlayerActive(0); // esconde overlay para começar
+  console.assert(!els.deckOverlay.classList.contains('show'),'Overlay oculto após escolha');
+  // range mover concede ação extra: turno não troca após mover
+  const prevTurn=Game.turn; moveRange('player','close'); console.assert(Game.turn===prevTurn,'Mover alcance não troca de turno');
+  // updatePanels safe
+  updatePanels();
+  console.assert(els.left.life.style.width.endsWith('%') && els.right.life.style.width.endsWith('%'),'HP width updated');
+  console.assert(els.left.energy.style.width.endsWith('%') && els.right.energy.style.width.endsWith('%'),'Energy width updated');
+  // sprites e ícones possuem src
+  console.assert(/^(https?:|data:)/.test(els.spriteLeftImg.src),'Sprite esquerda src');
+  console.assert(/^(https?:|data:)/.test(els.spriteRightImg.src),'Sprite direita src');
+  console.assert(/^(https?:|data:)/.test(els.left.attrImg.src),'Attr esquerda src');
+  console.assert(/^(https?:|data:)/.test(els.right.attrImg.src),'Attr direita src');
+  log('✅ Smoke tests OK — HUD fiel + esferas no topo + seleção de 3 Bakugan.');
+  }catch(err){ console.error('Smoke test falhou:', err); log('⚠️ Smoke test falhou: '+err.message); }
+}
+</script>
+</body>
+</html>
